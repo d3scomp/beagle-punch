@@ -11,7 +11,7 @@
 #include <asm/io.h>
 #include <linux/kthread.h>
 
-MODULE_LICENSE("Dual BSD/GPL");
+MODULE_LICENSE("GPL");
 
 struct omap_dm_timer *timer = 0;
 

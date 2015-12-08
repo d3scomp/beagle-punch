@@ -28,7 +28,7 @@
 #include <linux/pinctrl/consumer.h>
 #include <linux/pm_runtime.h>
 
-MODULE_LICENSE("Dual BSD/GPL");
+MODULE_LICENSE("GPL");
 
 struct mcspi_slave_platform_config {
 	unsigned int regs_offset;

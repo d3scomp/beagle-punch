@@ -5,7 +5,7 @@
 #include <linux/init.h>
 #include <linux/module.h>
 
-MODULE_LICENSE("Dual BSD/GPL");
+MODULE_LICENSE("GPL");
 
 static struct device * pru;
 

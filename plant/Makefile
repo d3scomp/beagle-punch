@@ -31,7 +31,7 @@ vi-bbb:
 insmod-bbb:
 	insmod ./modules/spi_slave.ko
 	insmod ./modules/pruss.ko
-	cd simulator; sh insert_sim.sh
+	cd modules; sh insert_sim.sh
 	cd ..
 
 run-bbb: bbb insmod-bbb

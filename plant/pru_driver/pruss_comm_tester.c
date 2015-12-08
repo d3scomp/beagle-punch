@@ -6,7 +6,7 @@
 #include <linux/module.h>
 #include <linux/delay.h>
 
-MODULE_LICENSE("Dual BSD/GPL");
+MODULE_LICENSE("GPL");
 
 static struct device * pru;
 

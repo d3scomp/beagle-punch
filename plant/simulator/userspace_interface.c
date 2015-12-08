@@ -26,7 +26,7 @@
 #include "json.h"
 #include "userspace_interface.h"
 
-MODULE_LICENSE("Dual BSD/GPL");
+MODULE_LICENSE("GPL");
 
 static struct cdev cdev;/* character device representing the simulator in userspace */
 static dev_t cdev_num;/* device number */

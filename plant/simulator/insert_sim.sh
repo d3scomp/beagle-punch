@@ -5,7 +5,7 @@ mode="664"
 
 # invoke insmod with all arguments we got
 # and use a pathname, as newer modutils don't look in . by default
-/sbin/insmod ./simulator.ko $* || exit 1
+insmod ./simulator.ko $* || exit 1
 
 echo module inserted
 

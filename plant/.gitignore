@@ -1,5 +1,5 @@
 /kernel
-/rootfs
+/dist
 /modules
 Module.symvers
 *.ko.cmd

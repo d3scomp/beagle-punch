@@ -31,7 +31,7 @@
 #include "spi_controller_bin.h"
 #include "../pru_driver/pruss.h"
 
-MODULE_LICENSE("Dual BSD/GPL");
+MODULE_LICENSE("GPL");
 
 struct pp_t pp_sim; /* punch press simulator data */
 
