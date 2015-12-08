@@ -18,7 +18,7 @@ pru: $(PASM)
 	make -C simulator PASM=$(PASM) PASM_V=$(PASM_V) pru
 	make -C pru_driver PASM=$(PASM) PASM_V=$(PASM_V) pru
 
-modules:
+modules: pru
 	make -C $(KERNELDIR) ARCH=$(ARCH) CROSS_COMPILE=$(TOOLCHAIN_PREFIX) M=$(PWD) modules
 	mkdir -p modules
 	cp -v spi_driver/*.ko hpirq_test/*.ko pru_driver/*.ko simulator/*.ko simulator/insert_sim.sh modules
@@ -35,7 +35,7 @@ insmod-bbb:
 	cd ..
 
 run-bbb: bbb insmod-bbb
-	cd vi-bbb; ./visualizer_interface &
+	visualizer_interface/visualizer_interface &
 
 quit-bbb:
 	-killall visualizer_interface

@@ -1,5 +1,6 @@
 #!/bin/sh
 
+module="simulator"
 device="ppsim"
 mode="664"
 
