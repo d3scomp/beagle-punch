@@ -1,8 +1,35 @@
-Connecting
-==========
+Setup instructions on CentOS 7
+==============================
+Remember to update network settings to reflect your network.
 
+
+Connecting after boot from internal flash [execute on BBB]
+==========================================================
 Connect serial console via USB-TTL cable. Black (GND) to 1
 115200 8 1 N (no flow control)
+
+echo "
+auto eth0
+iface eth0 inet static
+    address 10.10.16.226
+    netmask 255.255.255.0
+    network 10.10.16.0
+    gateway 10.10.16.1
+" >> /etc/network/interfaces
+
+ifup eth0
+
+
+Preparing SD Card [execute on CentOS 7 machine]
+===============================================
+# Execute on PC
+wget http://debian.beagleboard.org/images/bone-debian-7.5-2014-05-14-2gb.img.xz
+unxz bone-debian-7.5-2014-05-14-2gb.img.xz
+
+# Insert the card in BeagleBone and execute on PC
+scp bone-debian-7.5-2014-05-14-2gb.img.xz root@beagle1.d3s.hide.ms.mff.cuni.cz:/dev/mmcblk1
+
+# Reboot BeagleBone
 
 echo "
 auto eth0
@@ -23,28 +50,15 @@ sudo passwd root
 # Set some password
 
 
-Preparing SD Card
-=================
-
-# Execute on PC
-wget http://debian.beagleboard.org/images/bone-debian-7.5-2014-05-14-2gb.img.xz
-unxz bone-debian-7.5-2014-05-14-2gb.img.xz
-
-# Insert the card in BeagleBone and execute on PC
-scp bone-debian-7.5-2014-05-14-2gb.img.xz root@beagle1.d3s.hide.ms.mff.cuni.cz:/dev/mmcblk1
-
-# Reboot BeagleBone
-
-# On BeagleBone execute
+# Execute on BBB
 cd /opt/scripts/tools
 git pull
 ./grow_partition.sh
 reboot
 
 
-Preparing for kernel compilation
-================================
-
+Preparing for kernel compilation [execute on CentOS 7 machine]
+==============================================================
 yum install -y lzop gcc-arm-linux-gnu binutils-arm-linux-gnu
 
 # Build uboot-tools
@@ -54,8 +68,9 @@ rpmbuild --rebuild uboot-tools-2011.03-1.el6.src.rpm
 rpm -Uhv /root/rpmbuild/RPMS/x86_64/uboot-tools-2011.03-1.el7.centos.x86_64.rpm 
 
 
-Preparing and building kernel (http://elinux.org/Building_BBB_Kernel)
-=====================================================================
+Preparing and building kernel (http://elinux.org/Building_BBB_Kernel) [execute on CentOS 7 machine]
+===================================================================================================
+cd plant
 git clone git://github.com/beagleboard/kernel.git
 cd kernel
 git checkout 3.8
@@ -73,17 +88,37 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnu- uImage dtbs
 make ARCH=arm CROSS_COMPILE=arm-linux-gnu- uImage-dtb.am335x-boneblack
 make ARCH=arm CROSS_COMPILE=arm-linux-gnu- modules
 
-mkdir ../../rootfs
-make ARCH=arm CROSS_COMPILE=arm-linux-gnu- INSTALL_MOD_PATH=../../rootfs modules_install
+mkdir -p ../../dist
+make ARCH=arm CROSS_COMPILE=arm-linux-gnu- INSTALL_MOD_PATH=../../dist modules_install
 
 cd ../..
 
-Intalling the kernel on the BBB
-===============================
-scp kernel/kernel/arch/arm/boot/zImage root@beagle1.d3s.hide.ms.mff.cuni.cz:/boot/uboot
-scp kernel/kernel/arch/arm/boot/dts/am335x-boneblack.dtb root@beagle1.d3s.hide.ms.mff.cuni.cz:/boot/uboot/dtbs
+make all
 
-rm -f rootfs/lib/modules/3.8.13-00770-gfb3e41d-dirty/build rootfs/lib/modules//3.8.13-00770-gfb3e41d-dirty/source
-scp -r rootfs/* root@beagle1.d3s.hide.ms.mff.cuni.cz:/
 
+Intalling the kernel on the BBB [execute on CentOS 7 machine]
+=============================================================
+mkdir -p dist/boot/uboot
+cp kernel/kernel/arch/arm/boot/zImage dist/boot/uboot
+
+mkdir -p dist/boot/uboot/dtbs
+cp kernel/kernel/arch/arm/boot/dts/am335x-boneblack.dtb dist/boot/uboot/dtbs
+
+rm -f dist/lib/modules/3.8.13-00770-gfb3e41d-dirty/build dist/lib/modules/3.8.13-00770-gfb3e41d-dirty/source
+
+mkdir -p dist/root/punchpress
+cp -r modules Makefile visualizer_interface dist/root/punchpress
+
+scp -r dist/* root@beagle1.d3s.hide.ms.mff.cuni.cz:/
+
+
+Compiling on BBB [execute on BBB]
+=================================
+cd /root/punchpress
+make bbb
+
+
+Launching on BBB [execute on BBB]
+=================================
+make run-bbb
 
