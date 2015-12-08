@@ -1,0 +1,3 @@
+
+obj-y	:= spi_driver/ pru_driver/ simulator/ hpirq_test/
+

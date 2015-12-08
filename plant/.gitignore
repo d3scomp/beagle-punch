@@ -1,0 +1,14 @@
+/kernel
+/rootfs
+/modules
+Module.symvers
+*.ko.cmd
+*.ko
+*.o.cmd
+*.o
+modules.order
+*.swp
+*_bin.h
+.tmp_versions
+*.mod.c
+/pasm/pasm
