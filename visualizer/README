@@ -1,0 +1,19 @@
+
+This folder contains the Visualizer application.
+
+The application can be compiled using the make command and run using the ./run command.
+To compile and run the application correct setting of Java 8 compiler in ./Makefile
+and correct settup of Java 8 JVM in ./run is necessary.
+
+Subfolders of this folder contain the code of the Visualizer.
+
+javax.json-1.0.4.jar contains an implementation of the JSR 353 Java API for JSON processing.
+- it was downloaded from jsonp.java.net
+- it is distributed under licences GPL v2 and CDDL Version 1.1, to see the licences visit: https://jsonp.java.net/license.html
+- code of the library can be downloaded at: jsonp.java.net
+
+jssc.jar contain the jSSC library for serial port usage.
+- it was downloaded from http://code.google.com/p/java-simple-serial-connector/
+- the source code is also available at http://code.google.com/p/java-simple-serial-connector/
+- it is distributed under the GNU Lesser GPL license available at: www.gnu.org/licenses/lgpl.html
+
