@@ -1,0 +1,89 @@
+Connecting
+==========
+
+Connect serial console via USB-TTL cable. Black (GND) to 1
+115200 8 1 N (no flow control)
+
+echo "
+auto eth0
+iface eth0 inet static
+    address 10.10.16.226
+    netmask 255.255.255.0
+    network 10.10.16.0
+    gateway 10.10.16.1
+" >> /etc/network/interfaces
+
+ifup eth0
+
+update-rc.d apache2 disable
+update-rc.d lightdm disable
+update-rc.d xrdp disable
+
+sudo passwd root
+# Set some password
+
+
+Preparing SD Card
+=================
+
+# Execute on PC
+wget http://debian.beagleboard.org/images/bone-debian-7.5-2014-05-14-2gb.img.xz
+unxz bone-debian-7.5-2014-05-14-2gb.img.xz
+
+# Insert the card in BeagleBone and execute on PC
+scp bone-debian-7.5-2014-05-14-2gb.img.xz root@beagle1.d3s.hide.ms.mff.cuni.cz:/dev/mmcblk1
+
+# Reboot BeagleBone
+
+# On BeagleBone execute
+cd /opt/scripts/tools
+git pull
+./grow_partition.sh
+reboot
+
+
+Preparing for kernel compilation
+================================
+
+yum install -y lzop gcc-arm-linux-gnu binutils-arm-linux-gnu
+
+# Build uboot-tools
+yum install -y rpm-build
+wget https://kojipkgs.fedoraproject.org//packages/uboot-tools/2011.03/1.el6/src/uboot-tools-2011.03-1.el6.src.rpm
+rpmbuild --rebuild uboot-tools-2011.03-1.el6.src.rpm
+rpm -Uhv /root/rpmbuild/RPMS/x86_64/uboot-tools-2011.03-1.el7.centos.x86_64.rpm 
+
+
+Preparing and building kernel (http://elinux.org/Building_BBB_Kernel)
+=====================================================================
+git clone git://github.com/beagleboard/kernel.git
+cd kernel
+git checkout 3.8
+./patch.sh
+
+cp configs/beaglebone kernel/arch/arm/configs/beaglebone_defconfig
+echo "CONFIG_HIGH_PRIORITY_IRQ=y" >> kernel/arch/arm/configs/beaglebone_defconfig
+wget http://arago-project.org/git/projects/?p=am33x-cm3.git\;a=blob_plain\;f=bin/am335x-pm-firmware.bin\;hb=HEAD -O kernel/firmware/am335x-pm-firmware.bin
+cd kernel
+
+patch -p1 < ../../kernel.patch
+
+make ARCH=arm CROSS_COMPILE=arm-linux-gnu- beaglebone_defconfig
+make ARCH=arm CROSS_COMPILE=arm-linux-gnu- uImage dtbs
+make ARCH=arm CROSS_COMPILE=arm-linux-gnu- uImage-dtb.am335x-boneblack
+make ARCH=arm CROSS_COMPILE=arm-linux-gnu- modules
+
+mkdir ../../rootfs
+make ARCH=arm CROSS_COMPILE=arm-linux-gnu- INSTALL_MOD_PATH=../../rootfs modules_install
+
+cd ../..
+
+Intalling the kernel on the BBB
+===============================
+scp kernel/kernel/arch/arm/boot/zImage root@beagle1.d3s.hide.ms.mff.cuni.cz:/boot/uboot
+scp kernel/kernel/arch/arm/boot/dts/am335x-boneblack.dtb root@beagle1.d3s.hide.ms.mff.cuni.cz:/boot/uboot/dtbs
+
+rm -f rootfs/lib/modules/3.8.13-00770-gfb3e41d-dirty/build rootfs/lib/modules//3.8.13-00770-gfb3e41d-dirty/source
+scp -r rootfs/* root@beagle1.d3s.hide.ms.mff.cuni.cz:/
+
+
