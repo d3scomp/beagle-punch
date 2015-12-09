@@ -1,7 +1,7 @@
 #!/bin/sh
 
 CLASSPATH='-cp ./jssc.jar:./javax.json-1.0.4.jar:.'
-JAVA=java
+JAVA=/usr/java/latest/bin/java
 
 $JAVA $CLASSPATH bpv.view.Visualizer "$@"
 
