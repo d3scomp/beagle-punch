@@ -5,7 +5,7 @@ Remember to update network settings to reflect your network.
 
 Connecting after boot from internal flash [execute on BBB]
 ==========================================================
-Connect serial console via USB-TTL cable. Black (GND) to 1
+Connect serial console via USB or via USB-TTL cable (black (GND) to 1)
 115200 8 1 N (no flow control)
 
 echo "
@@ -45,6 +45,7 @@ ifup eth0
 update-rc.d apache2 disable
 update-rc.d lightdm disable
 update-rc.d xrdp disable
+systemctl disable serial-getty@ttyGS0.service
 
 sudo passwd root
 # Set some password
