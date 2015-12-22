@@ -15,8 +15,6 @@
 #include "Button.h"
 #include "SPI.h"
 
-extern uint32_t mainCycles;
-
 extern Button infoButton;
 extern UART pcUART;
 extern SPI punchSPI;
@@ -24,6 +22,6 @@ extern LED greenLed;
 extern LED redLed;
 extern LED orangeLed;
 extern LED blueLed;
-extern PulseLed greenPulseLed;
+extern PulseLED greenPulseLed;
 
 #endif /* MAIN_H_ */

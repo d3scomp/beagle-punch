@@ -58,12 +58,15 @@ void SPI::init() {
 	GPIO_SetBits(props.gpioCS, props.pinCS);
 
 	// Configure the SPI interrupt priority
-	NVIC_Init(&NVIC_InitStructure);
-	NVIC_InitStructure.NVIC_IRQChannel = props.irqn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = irqPreemptionPriority;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = irqSubPriority;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
+	NVIC_InitTypeDef nvicInitStruct;
+
+	// Enable the USART Interrupt
+	nvicInitStruct.NVIC_IRQChannel = props.irqn;
+	nvicInitStruct.NVIC_IRQChannelPreemptionPriority = irqPreemptionPriority;
+	nvicInitStruct.NVIC_IRQChannelSubPriority = irqSubPriority;
+	nvicInitStruct.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&nvicInitStruct);
+
 	SPI_I2S_ITConfig(props.spi, SPI_I2S_IT_RXNE, ENABLE);
 
 	SPI_Cmd(props.spi, ENABLE);

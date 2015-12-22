@@ -20,7 +20,7 @@ public:
 		void (*clkSPICmdFun)(uint32_t periph, FunctionalState newState);
 		uint32_t clkSPI;
 		uint8_t afConfig;
-		IRQn irqnSPI;
+		IRQn irqn;
 	};
 
 	SPI(Properties& initProps);
@@ -39,7 +39,7 @@ public:
 		props.gpioCS->BSRRL = props.pinCS;
 	}
 
-	inline void writeBytes(uint8_t val1, uint8_t val1) {
+	inline void writeBytes(uint8_t val1, uint8_t val2) {
 		props.gpioCS->BSRRH = props.pinCS;
 
 		props.spi->DR = val1;
@@ -84,6 +84,6 @@ private:
 
 	uint8_t irqPreemptionPriority;
 	uint8_t irqSubPriority;
-}
+};
 
 #endif

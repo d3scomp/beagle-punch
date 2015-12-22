@@ -1,8 +1,6 @@
 TARGET:=punch-eval
-# TODO change to your ARM gcc toolchain path
-TOOLCHAIN_ROOT:=~/gcc-arm-none-eabi
-TOOLCHAIN_PATH:=$(TOOLCHAIN_ROOT)/bin
-TOOLCHAIN_PREFIX:=arm-none-eabi
+TOOLCHAIN_PREFIX:=arm-none-eabi-
+TOOLCHAIN_ROOT:=/root/gcc-arm
 
 # Optimization level, can be [0, 1, 2, 3, s].
 OPTLVL:=0
@@ -38,8 +36,13 @@ vpath %.cpp $(CURDIR)/src
 SRC+=startup_stm32f4xx.s
 SRC+=stm32f4xx_it.c
 SRC+=system_stm32f4xx.c
-SRC+=main.c
 SRC+=syscalls.c
+SRC+=main.cpp
+SRC+=hooks.cpp
+SRC+=Button.cpp
+SRC+=LED.cpp
+SRC+=SPI.cpp
+SRC+=UART.cpp
 
 # FreeRTOS Source Files
 SRC+=port.c
@@ -73,21 +76,19 @@ CDEFS+=-D__FPU_PRESENT=1
 CDEFS+=-D__FPU_USED=1
 CDEFS+=-DARM_MATH_CM4
 
-MCUFLAGS=-mcpu=cortex-m4 -mthumb -mfloat-abi=hard
+MCUFLAGS=-mcpu=cortex-m4 -mthumb -mfloat-abi=softfp 
 COMMONFLAGS=-O$(OPTLVL) $(DBG) -Wall
 CFLAGS=$(COMMONFLAGS) $(MCUFLAGS) $(INCLUDE) $(CDEFS)
-CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -std=c++11
-LDLIBS=$(TOOLCHAIN_ROOT)/arm-none-eabi/lib/armv7e-m/fpu/libc_s.a $(TOOLCHAIN_ROOT)/arm-none-eabi/lib/armv7e-m/fpu/libm.a
+CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -std=c++11 -fno-use-cxa-atexit 
+#LDLIBS=$(TOOLCHAIN_ROOT)/arm-none-eabi/lib/armv7e-m/fpu/libc_s.a $(TOOLCHAIN_ROOT)/arm-none-eabi/lib/armv7e-m/fpu/libm.a
 LDFLAGS=$(COMMONFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -nostartfiles -Wl,--gc-sections,-T$(LINKER_SCRIPT)
 
-CC=$(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)-gcc
-C++=$(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)-g++
-LD=$(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)-gcc
-OBJCOPY=$(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)-objcopy
-OSIZE=$(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)-size
-AS=$(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)-as
-AR=$(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)-ar
-GDB=$(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)-gdb
+CC=$(TOOLCHAIN_PREFIX)gcc
+CPP=$(TOOLCHAIN_PREFIX)g++
+LD=$(TOOLCHAIN_PREFIX)g++
+OBJCOPY=$(TOOLCHAIN_PREFIX)objcopy
+OSIZE=$(TOOLCHAIN_PREFIX)size
+AS=$(TOOLCHAIN_PREFIX)as
 
 OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRC))
 OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(OBJ))
@@ -100,27 +101,27 @@ DEP := $(patsubst %.s,,$(DEP))
 
 $(BUILD_DIR)/%.o: %.c
 	@echo [CC] $(notdir $<)
-	@$(CC) $(CFLAGS) $< -c -o $@
+	$(CC) $(CFLAGS) $< -c -o $@
 
 $(BUILD_DIR)/%.o: %.cpp
 	@echo [C++] $(notdir $<)
-	@$(C++) $(CPPFLAGS) $< -c -o $@
+	$(CPP) $(CPPFLAGS) $< -c -o $@
 
 $(BUILD_DIR)/%.o: %.s
 	@echo [C++] $(notdir $<)
-	@$(AS) $< -o $@
+	$(AS) $< -o $@
 
 $(BUILD_DIR)/%.dep: %.c
-	arm-none-eabi-g++ -M $(CFLAGS) "$<" > "$@"
+	$(CC) -M $(CFLAGS) "$<" > "$@"
 
 $(BUILD_DIR)/%.dep: %.cpp
-	arm-none-eabi-g++ -M $(CPPFLAGS) "$<" > "$@"
+	$(CPP) -M $(CPPFLAGS) "$<" > "$@"
 
 all: $(BIN_DIR)/$(TARGET).elf
 
 $(BIN_DIR)/$(TARGET).elf: $(OBJ)
 	@echo [LD] $(TARGET).elf
-	@$(C++) -o $(BIN_DIR)/$(TARGET).elf $(LDFLAGS) $(OBJ) $(LDLIBS)
+	$(LD) -o $(BIN_DIR)/$(TARGET).elf $(LDFLAGS) $(OBJ) $(LDLIBS)
 	@echo [OBJCOPY] $(TARGET).hex
 	@$(OBJCOPY) -O ihex $(BIN_DIR)/$(TARGET).elf $(BIN_DIR)/$(TARGET).hex
 	@$(OSIZE) --format=berkeley $(BIN_DIR)/$(TARGET).elf
