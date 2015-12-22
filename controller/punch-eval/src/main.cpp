@@ -4,9 +4,33 @@
 
 #include <cstdio>
 
-void task_blink(void *p);
+void blinkTask(void* p) {
+	const TickType_t period = 1000 / portTICK_PERIOD_MS;
 
-uint32_t mainCycles;
+	TickType_t lastWakeTime = xTaskGetTickCount();
+	for(;;) {
+		greenPulseLed.pulse();
+
+		// Wait for the next cycle.
+		vTaskDelayUntil(&lastWakeTime, period);
+	}
+
+	vTaskDelete(NULL);
+}
+
+uint32_t mainCycles = 0;
+
+/*
+LED::Properties test1LedProps {
+	GPIOA, GPIO_Pin_1, RCC_AHB1Periph_GPIOA
+};
+LED test1Led(test1LedProps);
+
+LED::Properties test2LedProps {
+	GPIOA, GPIO_Pin_5, RCC_AHB1Periph_GPIOA
+};
+LED test2Led(test2LedProps);
+*/
 
 LED::Properties greenLedProps {
 	GPIOD, GPIO_Pin_12, RCC_AHB1Periph_GPIOD
@@ -25,6 +49,8 @@ LED redLed(redLedProps);
 LED blueLed(blueLedProps);
 LED orangeLed(orangeLedProps);
 
+PulseLED greenPulseLed(greenLed, 10);
+
 Button::Properties userButtonProps {
 	GPIOA, GPIO_Pin_0, RCC_AHB1Periph_GPIOA, EXTI_Line0, EXTI_PortSourceGPIOA, EXTI_PinSource0, EXTI0_IRQn
 };
@@ -34,12 +60,29 @@ UART::Properties uart2Props {
 	GPIOA, USART2,
 	GPIO_Pin_2, GPIO_Pin_3, GPIO_PinSource2, GPIO_PinSource3,
 	RCC_APB1PeriphClockCmd, RCC_AHB1Periph_GPIOA, RCC_APB1Periph_USART2, GPIO_AF_USART2, USART2_IRQn,
-	921600
+	115200
 };
 UART pcUART(uart2Props);
 
+SPI::Properties spi2Props {
+	GPIOB, GPIOB,
+	SPI2,
+	GPIO_Pin_0, GPIO_Pin_13, GPIO_Pin_14, GPIO_Pin_15,
+	GPIO_PinSource13, GPIO_PinSource14, GPIO_PinSource15,
+	RCC_AHB1Periph_GPIOB,
+	RCC_APB1PeriphClockCmd,
+	RCC_APB1Periph_SPI2,
+	GPIO_AF_SPI3,
+	SPI2_IRQn
+};
+SPI punchSPI(spi2Props);
+
 void handleInfoButtonInterrupt(void*) {
-	printf("Test");
+	printf(
+		"\nInfo:"
+		"\n  mainCycles = %d"
+		"\n",
+		mainCycles);
 }
 
 int main(void)
@@ -47,26 +90,30 @@ int main(void)
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);	// 4 bits for pre-emption priority, 0 bits for non-preemptive subpriority
 	pcUART.setPriority(1,0);
 	infoButton.setPriority(2,0);
+	punchSPI.setPriority(0,0);
 
 	greenLed.init();
 	redLed.init();
 	blueLed.init();
 	orangeLed.init();
 
+	greenPulseLed.init();
+
 	pcUART.init();
+
+	punchSPI.init();
 
 	infoButton.setPressedListener(handleInfoButtonInterrupt, nullptr);
 	infoButton.init();
 
 	// Create a task
-	ret = xTaskCreate(task_blink, "blink", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+	ret = xTaskCreate(blinkTask, "blink", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
 	if (ret == pdTRUE) {
 		printf("System Started!\n");
 		vTaskStartScheduler();  // should never return
 	} else {
 		printf("System Error!\n");
-		// --TODO blink some LEDs to indicate fatal system error
 	}
 
 	NVIC_SystemLPConfig(NVIC_LP_SLEEPONEXIT, ENABLE); // This ..
@@ -76,7 +123,24 @@ int main(void)
 	}
 }
 
+void USART2_IRQHandler(void) {
+//	GPIOA->BSRRL = GPIO_Pin_1;  // Requires test1Led to be initialized in main.cpp
+	pcUART.txrxInterruptHandler();
+//	GPIOA->BSRRH = GPIO_Pin_1;
+}
+
+void EXTI0_IRQHandler(void) {
+	infoButton.pressedInterruptHandler();
+}
+
+void SPI3_IRQHandler(void) {
+//	GPIOA->BSRRL = GPIO_Pin_5;    // Requires test2Led to be initialized in main.cpp
+	punchSPI.interruptHandler();
+//	GPIOA->BSRRH = GPIO_Pin_5;
+}
+
 void vApplicationTickHook(void) {
+	PulseLED::tickInterruptHandler();
 }
 
 /* vApplicationMallocFailedHook() will only be called if
@@ -115,12 +179,6 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName) 
 	taskDISABLE_INTERRUPTS();
 	for(;;);
 }
-
-void task_blink(void* p) {
-	vTaskDelete(NULL);
-}
-
-
 
 #ifdef  USE_FULL_ASSERT
 

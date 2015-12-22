@@ -13,22 +13,17 @@
 #include "UART.h"
 #include "LED.h"
 #include "Button.h"
-#include "TODQueue.h"
-#include "TOHQueue.h"
-#include "MsgHandler.h"
-#include "MRF24J40.h"
-#include "Timer.h"
-#include "GPS.h"
+#include "SPI.h"
 
 extern uint32_t mainCycles;
 
 extern Button infoButton;
-extern UART uartTOHD;
-extern MsgHandler msgHandler;
-extern Timer delayTimer;
-extern MRF24J40 mrf;
-extern UART uartGPS;
-extern GPSL30 gps;
-
+extern UART pcUART;
+extern SPI punchSPI;
+extern LED greenLed;
+extern LED redLed;
+extern LED orangeLed;
+extern LED blueLed;
+extern PulseLed greenPulseLed;
 
 #endif /* MAIN_H_ */
