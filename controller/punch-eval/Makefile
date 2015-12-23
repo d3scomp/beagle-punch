@@ -4,7 +4,7 @@ TOOLCHAIN_ROOT:=/root/gcc-arm
 
 # Optimization level, can be [0, 1, 2, 3, s].
 OPTLVL:=0
-DBG:=-g
+DBG:=-g3
 
 FREERTOS:=$(CURDIR)/FreeRTOS
 STARTUP:=$(CURDIR)/hardware
@@ -37,12 +37,13 @@ SRC+=startup_stm32f4xx.s
 SRC+=stm32f4xx_it.c
 SRC+=system_stm32f4xx.c
 SRC+=syscalls.c
-SRC+=main.cpp
+SRC+=main2.cpp
+#SRC+=main.cpp
 SRC+=hooks.cpp
-SRC+=Button.cpp
+#SRC+=Button.cpp
 SRC+=LED.cpp
-SRC+=SPI.cpp
-SRC+=UART.cpp
+#SRC+=SPI.cpp
+#SRC+=UART.cpp
 
 # FreeRTOS Source Files
 SRC+=port.c
@@ -76,12 +77,13 @@ CDEFS+=-D__FPU_PRESENT=1
 CDEFS+=-D__FPU_USED=1
 CDEFS+=-DARM_MATH_CM4
 
-MCUFLAGS=-mcpu=cortex-m4 -mthumb -mfloat-abi=softfp 
+MCUFLAGS=-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mthumb-interwork -MMD -MP -mlittle-endian
 COMMONFLAGS=-O$(OPTLVL) $(DBG) -Wall
 CFLAGS=$(COMMONFLAGS) $(MCUFLAGS) $(INCLUDE) $(CDEFS)
 CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -std=c++11 -fno-use-cxa-atexit 
-#LDLIBS=$(TOOLCHAIN_ROOT)/arm-none-eabi/lib/armv7e-m/fpu/libc_s.a $(TOOLCHAIN_ROOT)/arm-none-eabi/lib/armv7e-m/fpu/libm.a
-LDFLAGS=$(COMMONFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -nostartfiles -Wl,--gc-sections,-T$(LINKER_SCRIPT)
+#LDFLAGS=$(COMMONFLAGS) $(MCUFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -nostartfiles -Wl,--gc-sections,-T$(LINKER_SCRIPT)
+LDFLAGS=$(COMMONFLAGS) -T$(LINKER_SCRIPT) -Wl,-Map,$(BIN_DIR)/$(TARGET).map $(CPPFLAGS)
+
 
 CC=$(TOOLCHAIN_PREFIX)gcc
 CPP=$(TOOLCHAIN_PREFIX)g++
@@ -108,7 +110,7 @@ $(BUILD_DIR)/%.o: %.cpp
 	$(CPP) $(CPPFLAGS) $< -c -o $@
 
 $(BUILD_DIR)/%.o: %.s
-	@echo [C++] $(notdir $<)
+	@echo [AS] $(notdir $<)
 	$(AS) $< -o $@
 
 $(BUILD_DIR)/%.dep: %.c
@@ -139,7 +141,13 @@ clean:
 	@rm -f $(BIN_DIR)/$(TARGET).hex
 	@rm -f $(BIN_DIR)/$(TARGET).bin
 
-flash:
-	@st-flash write $(BIN_DIR)/$(TARGET).bin 0x8000000
+openocd:
+	#openocd -f interface/stlink-v2.cfg -f target/stm32f4x_stlink.cfg
+	openocd -f board/stm32f4discovery.cfg
+
+flash: all
+	openocd -f board/stm32f4discovery.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset"
+
+
 
 -include $(DEP)

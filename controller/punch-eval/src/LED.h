@@ -25,6 +25,8 @@ public:
 	void off();
 	void init();
 
+	void test(uint32_t pin);
+
 private:
 	Properties props;
 };

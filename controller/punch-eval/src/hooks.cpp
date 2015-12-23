@@ -1,7 +1,10 @@
 #include "hooks.h"
 #include "main.h"
 
+void SysTick_Handler(void) {
 
+}
+/*
 
 void USART2_IRQHandler(void) {
 //	GPIOA->BSRRL = GPIO_Pin_1;  // Requires test1Led to be initialized in main.cpp
@@ -19,8 +22,10 @@ void SPI3_IRQHandler(void) {
 //	GPIOA->BSRRH = GPIO_Pin_5;
 }
 
+*/
+
 void vApplicationTickHook(void) {
-	PulseLED::tickInterruptHandler();
+//	PulseLED::tickInterruptHandler();
 }
 
 /* vApplicationMallocFailedHook() will only be called if
