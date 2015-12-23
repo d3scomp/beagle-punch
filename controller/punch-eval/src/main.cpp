@@ -72,31 +72,35 @@ SPI::Properties spi2Props {
 	RCC_AHB1Periph_GPIOB,
 	RCC_APB1PeriphClockCmd,
 	RCC_APB1Periph_SPI2,
-	GPIO_AF_SPI3,
+	GPIO_AF_SPI2,
 	SPI2_IRQn
 };
 SPI punchSPI(spi2Props);
 
 void handleInfoButtonInterrupt(void*) {
 	printf(
-		"\nInfo:"
-		"\n  mainCycles = %lu"
-		"\n",
+		"\r\nInfo:"
+		"\r\n  mainCycles = %lu"
+		"\r\n",
 		mainCycles);
+
+	punchSPI.writeBytes(4, 30);
+	punchSPI.writeBytes(5, 50);
+	punchSPI.readByte(1);
+	punchSPI.readByte(2);
+	punchSPI.readByte(0);
 }
 
 int main(void)
 {
-/*
+
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);	// 4 bits for pre-emption priority, 0 bits for non-preemptive subpriority
 	pcUART.setPriority(1,0);
 	infoButton.setPriority(2,0);
 	punchSPI.setPriority(0,0);
+
 	greenLed.init();
-*/
 	redLed.init();
-	redLed.on();
-	/*
 	blueLed.init();
 	orangeLed.init();
 
@@ -118,10 +122,10 @@ int main(void)
 	} else {
 		printf("System Error!\n");
 	}
-*/
-//	NVIC_SystemLPConfig(NVIC_LP_SLEEPONEXIT, ENABLE); // This ..
+
+	NVIC_SystemLPConfig(NVIC_LP_SLEEPONEXIT, ENABLE); // This ..
 	while (1) {
-//		__WFI(); // ... and this has to be commented out when debugging.
+		__WFI(); // ... and this has to be commented out when debugging.
 		mainCycles++; // This is to measure how many times we wake up from WFI. In fact, we should never wake up.
 	}
 }

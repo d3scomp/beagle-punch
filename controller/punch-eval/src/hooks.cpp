@@ -1,11 +1,6 @@
 #include "hooks.h"
 #include "main.h"
 
-void SysTick_Handler(void) {
-
-}
-/*
-
 void USART2_IRQHandler(void) {
 //	GPIOA->BSRRL = GPIO_Pin_1;  // Requires test1Led to be initialized in main.cpp
 	pcUART.txrxInterruptHandler();
@@ -16,16 +11,14 @@ void EXTI0_IRQHandler(void) {
 	infoButton.pressedInterruptHandler();
 }
 
-void SPI3_IRQHandler(void) {
+void SPI2_IRQHandler(void) {
 //	GPIOA->BSRRL = GPIO_Pin_5;    // Requires test2Led to be initialized in main.cpp
 	punchSPI.interruptHandler();
 //	GPIOA->BSRRH = GPIO_Pin_5;
 }
 
-*/
-
 void vApplicationTickHook(void) {
-//	PulseLED::tickInterruptHandler();
+	PulseLED::tickInterruptHandler();
 }
 
 /* vApplicationMallocFailedHook() will only be called if

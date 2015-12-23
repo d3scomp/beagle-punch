@@ -47,8 +47,8 @@ void SPI::init() {
 	spiInitStruct.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
 	spiInitStruct.SPI_Mode = SPI_Mode_Master;
 	spiInitStruct.SPI_DataSize = SPI_DataSize_8b;
-	spiInitStruct.SPI_CPOL = SPI_CPOL_Low;
-	spiInitStruct.SPI_CPHA = SPI_CPHA_1Edge;
+	spiInitStruct.SPI_CPOL = SPI_CPOL_High;
+	spiInitStruct.SPI_CPHA = SPI_CPHA_2Edge;
 	spiInitStruct.SPI_NSS = SPI_NSS_Soft;
 	spiInitStruct.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
 	spiInitStruct.SPI_FirstBit = SPI_FirstBit_MSB;

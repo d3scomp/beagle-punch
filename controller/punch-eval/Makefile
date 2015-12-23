@@ -37,13 +37,13 @@ SRC+=startup_stm32f4xx.s
 SRC+=stm32f4xx_it.c
 SRC+=system_stm32f4xx.c
 SRC+=syscalls.c
-SRC+=main2.cpp
-#SRC+=main.cpp
+#SRC+=main2.cpp
+SRC+=main.cpp
 SRC+=hooks.cpp
-#SRC+=Button.cpp
+SRC+=Button.cpp
 SRC+=LED.cpp
-#SRC+=SPI.cpp
-#SRC+=UART.cpp
+SRC+=SPI.cpp
+SRC+=UART.cpp
 
 # FreeRTOS Source Files
 SRC+=port.c

@@ -12,6 +12,12 @@ LED::Properties redLedProps {
 
 LED redLed(redLedProps);
 
+LED::Properties blueLedProps {
+	GPIOD, GPIO_Pin_15, RCC_AHB1Periph_GPIOD
+};
+LED blueLed(blueLedProps);
+
+
 int main(void) {
 	GPIO_InitTypeDef  gpioInitStruct;
 
@@ -24,8 +30,8 @@ gpioInitStruct.GPIO_Speed = GPIO_Speed_50MHz;
 GPIO_Init(GPIOD, &gpioInitStruct);
 GPIOD->BSRRL = GPIO_Pin_12;
 
-redLed.init();
-	redLed.on();
+blueLed.init();
+	blueLed.on();
 
 
 	int counter = 0;

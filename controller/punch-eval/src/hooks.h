@@ -7,7 +7,7 @@ extern "C" {
 
 void USART2_IRQHandler(void);
 void EXTI0_IRQHandler(void);
-void SPI3_IRQHandler(void);
+void SPI2_IRQHandler(void);
 void vApplicationTickHook(void);
 void vApplicationMallocFailedHook(void);
 void vApplicationIdleHook(void);
