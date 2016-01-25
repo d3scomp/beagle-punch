@@ -71,7 +71,6 @@ rpm -Uhv /root/rpmbuild/RPMS/x86_64/uboot-tools-2011.03-1.el7.centos.x86_64.rpm
 
 Preparing and building kernel (http://elinux.org/Building_BBB_Kernel) [execute on CentOS 7 machine]
 ===================================================================================================
-cd plant
 git clone git://github.com/beagleboard/kernel.git
 cd kernel
 git checkout 3.8
