@@ -1,7 +1,7 @@
 ifneq ($(KERNELRELEASE),)
 # call from kernel build system
 
-obj-m := spi_slave.o main.o 
+obj-m := spi_slave.o simulator.o 
 main-objs = json.o simulation.o userspace_interface.o xorshift.o
 
 else

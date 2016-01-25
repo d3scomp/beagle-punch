@@ -18,8 +18,6 @@
 #include <asm/uaccess.h>
 #include <linux/clk.h>
 
-#include "consumer.h"
-
 #include "simulation.h"
 #include "json.h"
 #include "spi_slave.h"
@@ -191,7 +189,7 @@ fail_gpio_request:
 	return err;
 }
 
-static int simulator_module_init(void)
+static int simulator_init(void)
 {
 	int err;
 	unsigned int init_val;
@@ -295,14 +293,13 @@ fail_timer_request:
 	pruss_disable(pru, PRUSS_NUM0);
 fail_pru_request:
 	mcspi_slave_free(spi_slave);
-fail_mcspi_setup:
 fail_spi_get:
 	free_pins();
 fail_gpio_request:
 	return err;
 }
 
-static void simulator_module_exit(void)
+static void simulator_exit(void)
 {
 	printk(KERN_ALERT "Simulator ending\n");
 
@@ -323,9 +320,8 @@ static void simulator_module_exit(void)
 	mcspi_slave_disable(spi_slave);
 	mcspi_slave_free(spi_slave);
 	free_pins();
-	mcspi_slave_release(); 
 }
 
-module_init(simulator_module_init);
-module_exit(simulator_module_exit);
+module_init(simulator_init);
+module_exit(simulator_exit);
 
