@@ -1,15 +1,7 @@
-
-#ifdef __KERNEL__
-
 #include <linux/kernel.h>
 #include <linux/string.h> // memset
 
 #include <asm/div64.h>
-#else
-
-#include <string.h>
-#include <stdio.h>
-#endif
 
 #include "simulation.h"
 #include "xorshift.h"
@@ -25,32 +17,6 @@ static inline s32 abs32(s32 x)
 	return x < 0 ? -x : x;
 }
 
-#ifdef PPSIM_DEBUG
-#if __KERNEL__
-#define dp(fmt, args...) \
-	do { \
-		if (rem_prints > 0) \
-			early_printk(fmt,##args); \
-	} while(0)
-#else
-#define dp(fmt, args...) printf(fmt,##args)
-#endif
-#else
-
-#define dp(fmt, args...)
-#endif
-
-#ifndef __KERNEL__
-
-#define signed_do_div(dividend, divisor) \
-({ \
-	dividend = dividend / divisor; \
-})
-
-#define mb() 
-
-#else
-
 #define signed_do_div(dividend, divisor) \
 ({ \
 	int s1 = sign(dividend); \
@@ -60,8 +26,6 @@ static inline s32 abs32(s32 x)
 	do_div(udividend, udivisor); \
 	dividend = (s64)udividend * s1 * s2; \
 })
-
-#endif
 
 
 #define ERS_TABLE_SAFE_ZONE 20000000 //nm /* this is zone around the punching area, exiting this zone with the center of the punching head leads to failure */

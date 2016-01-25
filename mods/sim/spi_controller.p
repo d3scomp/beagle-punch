@@ -4,13 +4,10 @@
 
 #define C_PRUCFG	c4
 
-//#define C_SPI		c6 // c6 = McSPI0, c16 = McSPI1
-
 #define SPI_ADDR	0x48030000 // 0x48030000 = McSPI0, 0x481A0000 = McSPI1
 #define SPI_STAT_OFFSET	0x130
 #define SPI_TX_OFFSET	0x138
 #define SPI_RX_OFFSET	0x13c
-#define SPI_CH0CONF_OFFSET	0x12c
 #define SPI_CH0CTRL_OFFSET	0x134
 
 #define LAST_VALID_CMD	6
@@ -22,7 +19,6 @@
 // ****************************************************************************
 // variables
 #define SIM_STATE_VAR		0x0 // first byte contains renspose to the encoders command, second byte response to the errors command; the simulator writes this value
-#define SIM_ACTUATORS_VAR	0x4 // contains actuator values of the simulator; consists of three bytes: pwrx, pwry, irq enabled; the simulator reads this value
 #define PWRX_VAR		0x4
 #define PWRY_VAR		0x5
 #define IRQ_EN_VAR		0x6

@@ -37,7 +37,6 @@ struct pp_t pp_sim; /* punch press simulator data */
 
 #define RESET_PIN_NUM	44
 #define ENC_CHANGE_PIN_NUM	26
-#define SLAVE_SELECT_PIN_NUM	46
 
 static struct mcspi_slave_device * spi_slave;
 
