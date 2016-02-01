@@ -1,3 +1,5 @@
+.PHONY: all clean
+
 ifneq ($(KERNELRELEASE),)
 # call from kernel build system
 

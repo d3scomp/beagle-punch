@@ -34,7 +34,7 @@ struct pp_t pp_sim; /* punch press simulator data */
 #define UPDATE_PERIOD_US	(1000000 / UPDATE_FREQUENCY)
 
 #define RESET_PIN_NUM	44
-#define ENC_CHANGE_PIN_NUM	26
+#define IRQ_PIN_NUM	26
 
 static struct mcspi_slave_device * spi_slave;
 
@@ -116,7 +116,7 @@ static irqreturn_t timer_irq_handler(int a, void *b)
 		if (pp_sim.irq_enabled && (retval & (US_PUNCH_START | US_PUNCH_END | US_ENC_CHANGE | US_ERR_CHANGE)))
 		{
 			enc_val = !enc_val;
-			gpio_set_value(ENC_CHANGE_PIN_NUM, enc_val);
+			gpio_set_value(IRQ_PIN_NUM, enc_val);
 		}
 	}
 
@@ -147,7 +147,7 @@ static struct pin_def_t pins[PIN_COUNT] =
 		.allocated = false,
 	},
 	{
-		.number = ENC_CHANGE_PIN_NUM,
+		.number = IRQ_PIN_NUM,
 		.flags = GPIOF_OUT_INIT_LOW,
 		.allocated = false,
 	},
@@ -213,6 +213,8 @@ static int simulator_init(void)
 	}
 
 	mcspi_slave_enable(spi_slave, 8);//16);
+
+	// TODO: While mcspi uses the device tree to obtain a free mcspi (there are two on BBB), the PRU code (in spi_controller.p) plainly assumes that SPI0 is used.
 
 	pru = pruss_get();
 	if (!pru)

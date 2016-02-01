@@ -14,8 +14,6 @@
 
 #define SLAVE_SELECT_REG	r31.t14 // slave select GPI
 
-#define PUNCH_IRQ	0x20 // value to be written to r31 when punch request is received
-
 // ****************************************************************************
 // variables
 #define SIM_STATE_VAR		0x0 // first byte contains renspose to the encoders command, second byte response to the errors command; the simulator writes this value
@@ -91,53 +89,12 @@ start:
 
 // ****************************************************************************
 
-.macro wait
-	MOV r7, 0x00f00000
-del2:
-	SUB r7, r7, 1
-	QBNE del2, r7, 0
-.endm
-
-.macro blink
-	set	r30.t15
-
-	MOV r7, 0x00f00000
-del1:
-	SUB r7, r7, 1
-	QBNE del1, r7, 0
-
-	clr	r30.t15
-.endm
-
-// blinking on PRU gpo 15
-//	mov	r1, 1
-//loop1:
-//	xor	r1, r1, 1
-//	qbeq	set_pin, r1, 1
-//
-//reset_pin:
-//	clr	r30.t15
-//	jmp	end_pin
-//set_pin:
-//	set	r30.t15
-//
-//end_pin:
-//	MOV r0, 0x00f00000
-//DEL1:
-//	SUB r0, r0, 1
-//	QBNE DEL1, r0, 0
-//
-//	jmp	loop1
-
-// ****************************************************************************
-
 	mov	r1, 0x8
 	mov	r0, 255
 	sbbo	r0, r1, 0, 4
 
 // wait until we are selected
 wait_for_ss:
-	//set	r30.t15
 	// disable spi module
 	mov	r0, 0
 	mov	r1, SPI_ADDR + SPI_CH0CTRL_OFFSET
@@ -157,31 +114,16 @@ wait_for_ss_inner:
 
 // write tx, so that we do not get underflow
 	write_spi_zero	r0, r1
-	//clr	r30.t15
 
 // ****************************************************************************
-
-	clr	r30.t15
-	clr	r20.t15
 loop0:
 
 	// wait for value to be received through spi
 	wait_spi	r0, r1
-	//blink
-	//wait
 
 	// process received command
 	read_spi	r0
 
-	//mov	r3, SPI_ADDR + SPI_STAT_OFFSET
-	//lbbo	r3, r3, 0, 4 // load spi stat register to r3
-	//blink
-	//wait
-	//qbbc	normal, r3.t0
-	//blink
-	//wait
-	//wait
-	//wait
 
 //normal:
 	and	r0, r0.b0, 0x7f // we send commands with the MSB set to 1 from the controller IRQ handler
@@ -217,8 +159,6 @@ errors_write:
 cmd_punch_l:
 	// write empty response
 	write_spi_zero	r0, r1
-	// set punch interrupt
-	//ldi	r31, PUNCH_IRQ
 	// set actuators
 	mov	r0, 1
 	store_sim_act	r0, r1, PUNCH_VAR
@@ -253,14 +193,6 @@ cmd_irq_en_l:
 
 bad_cmd:
 	write_spi_zero	r1, r2
-	qbbs	loop_end, r20.t15
-	// write the bad value into address 0x10
-	mov	r3, 0x10
-	sbbo	r0, r3, 0, 1
-	//light a LED
-	set	r30.t15
-	set	r20.t15
-	jmp	loop_end
 
 loop_end:
 	jmp	loop0
