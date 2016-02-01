@@ -1,13 +1,16 @@
-.PHONY: all mods clean
+.PHONY: all mods dist clean
 
-all: pasm/pasm mods
+all: dist
 
 pasm/pasm:
-	cd pasm/pasm_source
-	sh linuxbuild
+	cd pasm/pasm_source && sh linuxbuild
 
-mods:
+mods:	pasm/pasm
 	make -C mods all
+
+dist:	mods
+	mkdir -p dist/root/punchpress/mods
+	cp -f mods/modules.order mods/Module.symvers mods/pruss/pruss.ko mods/sim/spi_slave.ko mods/sim/sim.ko dist/root/punchpress/mods
 
 clean:
 	make -C mods clean

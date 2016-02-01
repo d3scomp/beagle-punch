@@ -93,8 +93,6 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnu- INSTALL_MOD_PATH=../../dist modules_i
 
 cd ../..
 
-make all
-
 
 Intalling the kernel on the BBB [execute on CentOS 7 machine]
 =============================================================
@@ -104,10 +102,15 @@ cp kernel/kernel/arch/arm/boot/zImage dist/boot/uboot
 mkdir -p dist/boot/uboot/dtbs
 cp kernel/kernel/arch/arm/boot/dts/am335x-boneblack.dtb dist/boot/uboot/dtbs
 
-rm -f dist/lib/modules/3.8.13-00770-gfb3e41d-dirty/build dist/lib/modules/3.8.13-00770-gfb3e41d-dirty/source
+rm -f dist/lib/modules/3.8.13-00770-*-dirty/build dist/lib/modules/3.8.13-00770-*-dirty/source
 
-mkdir -p dist/root/punchpress
-cp -r modules Makefile visualizer_interface dist/root/punchpress
+
+Building and installing custom modules and client/server [execute on CentOS 7 machine]
+======================================================================================
+make all
+
+mkdir -p dist/root/punchpress/mods
+cp -f mods/modules.order mods/Module.symvers mods/pruss/pruss.ko mods/sim/spi_slave.ko mods/sim/sim.ko dist/root/punchpress/mods
 
 scp -r dist/* root@beagle1.d3s.hide.ms.mff.cuni.cz:/
 
