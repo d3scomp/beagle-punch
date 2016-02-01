@@ -118,10 +118,9 @@ scp -r dist/* root@beagle1.d3s.hide.ms.mff.cuni.cz:/
 Compiling on BBB [execute on BBB]
 =================================
 cd /root/punchpress
-make bbb
+make
 
 
 Launching on BBB [execute on BBB]
 =================================
-make run-bbb
-
+./start

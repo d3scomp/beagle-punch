@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+
+insmod mods/pruss.ko mods/spi_slave.ko mods/sim.ko || exit 1
+
+rm -f /dev/ppsim0
+
+major=`awk "\\$2==\"simulator\" {print \\$1}" /proc/devices`
+mknod /dev/ppsim0 c $major 0
+chmod 664 /dev/ppsim0
+
+visserver/visserver 
