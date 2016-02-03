@@ -92,7 +92,7 @@ int json_print_status(char * buf, size_t size, struct pp_t * pp_sim)
 		"}",
 		pp_sim->x_axis.head_pos, pp_sim->y_axis.head_pos,
 		pp_sim->x_axis.velocity, pp_sim->y_axis.velocity,
-		pp_fail(pp_sim) ? truestr : falsestr,
+		pp_sim->failed ? truestr : falsestr,
 		pp_sim->last_punch.x_pos, pp_sim->last_punch.y_pos,
 		pp_sim->punched_punches,
 

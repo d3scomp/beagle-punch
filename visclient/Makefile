@@ -1,5 +1,8 @@
+# Oracle Java 8 is required because of the JavaFX dependency
 JAVAC=/usr/java/latest/bin/javac
+
 CLASSPATH=-cp ./jssc.jar:./javax.json-1.0.4.jar:.
+
 SRCS=\
 	bpv/plant/PlantState.java \
 	bpv/plant/Punch.java \

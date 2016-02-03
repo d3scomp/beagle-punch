@@ -68,7 +68,7 @@ const unsigned int PRUcode[] =  {
      0x240007e1,
      0xf1000101,
      0xc900e102,
-     0x13012020,
+     0x11fe2020,
      0x244803c1,
      0x24013881,
      0xe10021a0,

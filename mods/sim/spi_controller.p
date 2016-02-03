@@ -73,8 +73,8 @@ lloop:
 start:
 	// prepare branch table
 	ldi	r0, cmd_none_l
-	ldi	r1, cmd_encoders_l
-	ldi	r2, cmd_errors_l
+	ldi	r1, cmd_state1_l
+	ldi	r2, cmd_state2_l
 	ldi	r3, cmd_punch_l
 	ldi	r4, cmd_pwrx_l
 	ldi	r5, cmd_pwry_l
@@ -140,19 +140,19 @@ cmd_none_l: // do nothing, write arbitrary response
 	write_spi_zero	r0, r1
 	jmp	loop_end
 
-cmd_encoders_l:
+cmd_state1_l:
 	load_sim_state r0
 	write_spi	r0.b0, r1
 	jmp	loop_end
 
-cmd_errors_l:
+cmd_state2_l:
 	load_sim_state r0
 	// if punch start is set, make sure that we return that punch is in progress
 	mov	r1, PUNCH_VAR
 	lbbo	r1.b0, r1, 0, 1 // load punch request status
-	qbbc	errors_write, r1.t0 // skip following instruction, when punch request is not set
-	or	r0.b1, r0.b1, 1
-errors_write:
+	qbbc	state2_write, r1.t0 // skip following instruction, when punch request is not set
+	and	r0.b1, r0.b1, 0xfe // clear the head up bit
+state2_write:
 	write_spi	r0.b1, r1
 	jmp	loop_end
 
@@ -160,6 +160,8 @@ cmd_punch_l:
 	// write empty response
 	write_spi_zero	r0, r1
 	// set actuators
+
+	// TODO: This is actually incomplete. It should additionally check whether PUNCH_VAR is already set. If it is, it should signal an error, which would be later process by the simulation
 	mov	r0, 1
 	store_sim_act	r0, r1, PUNCH_VAR
 	jmp	loop_end

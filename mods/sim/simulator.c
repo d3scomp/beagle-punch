@@ -33,8 +33,21 @@ struct pp_t pp_sim; /* punch press simulator data */
 #define UPDATE_FREQUENCY	3000
 #define UPDATE_PERIOD_US	(1000000 / UPDATE_FREQUENCY)
 
-#define RESET_PIN_NUM	44
-#define IRQ_PIN_NUM	26
+#define PIN_NUM(GPIO, PIN)	(PIN + GPIO * 32)
+
+#define RESET_PIN_NUM		PIN_NUM(1, 12)	// P8_12 - GPIO1_12
+#define IRQ_PIN_NUM		PIN_NUM(0, 26)	// P8_14 - GPIO0_26
+#define HEAD_UP_PIN_NUM		PIN_NUM(2, 22)	// P8_27 - GPIO2_22 
+#define FAIL_PIN_NUM		PIN_NUM(2, 24)	// P8_28 - GPIO2_24 
+#define RESERVED_PIN_NUM	PIN_NUM(2, 23)	// P8_29 - GPIO2_23 
+#define ENC_X0_PIN_NUM		PIN_NUM(2, 12)	// P8_39 - GPIO2_12 
+#define ENC_X1_PIN_NUM		PIN_NUM(2, 13)	// P8_40 - GPIO2_13 
+#define ENC_Y0_PIN_NUM		PIN_NUM(2, 10)	// P8_41 - GPIO2_10 
+#define ENC_Y1_PIN_NUM		PIN_NUM(2, 11)	// P8_42 - GPIO2_11 
+#define SAFE_L_PIN_NUM		PIN_NUM(2, 8)	// P8_43 - GPIO2_8 
+#define SAFE_R_PIN_NUM		PIN_NUM(2, 9)	// P8_44 - GPIO2_9 
+#define SAFE_T_PIN_NUM		PIN_NUM(2, 6)	// P8_45 - GPIO2_6 
+#define SAFE_B_PIN_NUM		PIN_NUM(2, 7)	// P8_46 - GPIO2_7
 
 static struct mcspi_slave_device * spi_slave;
 
@@ -45,64 +58,62 @@ static int timer_irq_number = -1;
 const char *module_name = "simulator";
 
 static struct device * pru;
-#define	PRU_SENSORS_ADDRESS	0x0
-#define PRU_ACTUATORS_ADDRESS	0x4
+#define PRU_SIM_STATE_VAR           0x0 // first byte contains renspose to the encoders command, second byte response to the errors command; the simulator writes this value
+#define PRU_PWRX_VAR                0x4
+#define PRU_PWRY_VAR                0x5
+#define PRU_IRQ_EN_VAR              0x6
+#define PRU_PUNCH_VAR               0x7
+
+
 
 static void set_spi_sensor_values(struct pp_t * pp, update_state_t update_result)
 {
-	u32 pp_encoders = pp_sim.x_axis.encoder | (pp_sim.y_axis.encoder << 2);
-	u32 pp_errors = (pp_punch_in_progress(&pp_sim) ? 1 : 0) | (pp_fail(&pp_sim) ? 2 : 0) |
-		((pp_sim.x_axis.errors & 0x3) << 2) | ((pp_sim.y_axis.errors & 0x3) << 4);
-	if (update_result & US_PUNCH_START)
+	u32 sim_state = (update_result & 0xf) | ((update_result << 4) & 0x3f00);
+
+	if (update_result & US_HEAD_UP)
 	{
-		pruss_writeb(pru, PRU_ACTUATORS_ADDRESS + 3, 0);
+		pruss_writeb(pru, PRU_PUNCH_VAR, 0);
 	}
 
-	pruss_writel(pru, PRU_SENSORS_ADDRESS, pp_encoders | (pp_errors << 8));
+	pruss_writel(pru, PRU_SIM_STATE_VAR, sim_state);
 }
 
 static void get_spi_actuator_values(struct pp_t * pp)
 {
 	u32 actuators;
-	pruss_readl(pru, PRU_ACTUATORS_ADDRESS, &actuators);
+	pruss_readl(pru, PRU_PWRX_VAR, &actuators);
 	pp->x_axis.power = actuators & 0xff;
 	pp->y_axis.power = (actuators >> 8) & 0xff;
 	pp->irq_enabled = ((actuators >> 16) & 0xff) ? 1 : 0;
-	if (actuators & 0xff000000)
-	{
-		pp_punch(pp);
-	}
+	pp->punch = ((actuators >> 24) & 0xff) ? 1 : 0;
 }
 
 static void reset_spi_actuator_values(void)
 {
-	pruss_writel(pru, PRU_ACTUATORS_ADDRESS, 0);
+	pruss_writel(pru, PRU_PWRX_VAR, 0);
 }
 
-
-static irqreturn_t reset_line(int irq, void * data)
-{
-	pp_reinit(&pp_sim);
-	set_spi_sensor_values(&pp_sim, 0);
-	reset_spi_actuator_values();
-	return IRQ_HANDLED;
-}
 
 static int prev_reset_value = 1;
 
 static irqreturn_t timer_irq_handler(int a, void *b)
 {
-	static int enc_val = 0;
+	static int irq_val = 0;
+	static update_state_t last_retval = 0;
 	update_state_t retval;
 	omap_dm_timer_write_status(timer, OMAP_TIMER_INT_OVERFLOW); // clear interrupt flag
 	
-	if (!gpio_get_value(RESET_PIN_NUM)) // detect controller reset and reset the plant in that case
+	if (!gpio_get_value(RESET_PIN_NUM) && prev_reset_value) // detect controller reset and reset the plant in that case
 	{
-		if (prev_reset_value)
-		{
-			reset_line(0, 0);
-			prev_reset_value = 0;
-		}
+		pp_reinit(&pp_sim);
+		reset_spi_actuator_values();
+
+		retval = pp_update(&pp_sim, UPDATE_PERIOD_US);
+		set_spi_sensor_values(&pp_sim, retval);
+
+		last_retval = retval;
+
+		prev_reset_value = 0;
 	}
 	else
 	{
@@ -112,12 +123,26 @@ static irqreturn_t timer_irq_handler(int a, void *b)
 		retval = pp_update(&pp_sim, UPDATE_PERIOD_US);
 
 		set_spi_sensor_values(&pp_sim, retval);
-		// send encoder interrupt if enabled and encoder value changed
-		if (pp_sim.irq_enabled && (retval & (US_PUNCH_START | US_PUNCH_END | US_ENC_CHANGE | US_ERR_CHANGE)))
+
+		// send encoder interrupt if enabled and something has changed
+		if (pp_sim.irq_enabled && retval != last_retval)
 		{
-			enc_val = !enc_val;
-			gpio_set_value(IRQ_PIN_NUM, enc_val);
+			irq_val = !irq_val;
+			gpio_set_value(IRQ_PIN_NUM, irq_val);
 		}
+
+		gpio_set_value(HEAD_UP_PIN_NUM, retval & US_HEAD_UP);
+		gpio_set_value(FAIL_PIN_NUM, retval & US_FAIL);
+		gpio_set_value(ENC_X0_PIN_NUM, retval & US_ENC_X0);
+		gpio_set_value(ENC_X1_PIN_NUM, retval & US_ENC_X1);
+		gpio_set_value(ENC_Y0_PIN_NUM, retval & US_ENC_Y0);
+		gpio_set_value(ENC_Y1_PIN_NUM, retval & US_ENC_Y1);
+		gpio_set_value(SAFE_L_PIN_NUM, retval & US_SAFE_L);
+		gpio_set_value(SAFE_R_PIN_NUM, retval & US_SAFE_R);
+		gpio_set_value(SAFE_T_PIN_NUM, retval & US_SAFE_T);
+		gpio_set_value(SAFE_B_PIN_NUM, retval & US_SAFE_B);
+
+		last_retval = retval;
 	}
 
 	return IRQ_HANDLED;
@@ -131,7 +156,7 @@ static irqreturn_t timer_irq_handler(int a, void *b)
 		printk(KERN_ALERT "Time does not have capability: " #cap "\n"); \
 	} while (0)
 
-#define PIN_COUNT	2
+#define PIN_COUNT	13
 struct pin_def_t
 {
 	unsigned int number;
@@ -151,6 +176,62 @@ static struct pin_def_t pins[PIN_COUNT] =
 		.flags = GPIOF_OUT_INIT_LOW,
 		.allocated = false,
 	},
+
+	{
+		.number = HEAD_UP_PIN_NUM,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.allocated = false,
+	},		
+	{
+		.number = FAIL_PIN_NUM,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.allocated = false,
+	},		
+	{
+		.number = RESERVED_PIN_NUM,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.allocated = false,
+	},	
+	{
+		.number = ENC_X0_PIN_NUM,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.allocated = false,
+	},		
+	{
+		.number = ENC_X1_PIN_NUM,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.allocated = false,
+	},		
+	{
+		.number = ENC_Y0_PIN_NUM,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.allocated = false,
+	},		
+	{
+		.number = ENC_Y1_PIN_NUM,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.allocated = false,
+	},		
+	{
+		.number = SAFE_L_PIN_NUM,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.allocated = false,
+	},		
+	{
+		.number = SAFE_R_PIN_NUM,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.allocated = false,
+	},		
+	{
+		.number = SAFE_T_PIN_NUM,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.allocated = false,
+	},		
+	{
+		.number = SAFE_B_PIN_NUM,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.allocated = false,
+	},		
 };
 
 static void free_pins(void)
@@ -212,7 +293,7 @@ static int simulator_init(void)
 		goto fail_spi_get;
 	}
 
-	mcspi_slave_enable(spi_slave, 8);//16);
+	mcspi_slave_enable(spi_slave, 8);
 
 	// TODO: While mcspi uses the device tree to obtain a free mcspi (there are two on BBB), the PRU code (in spi_controller.p) plainly assumes that SPI0 is used.
 
@@ -283,7 +364,7 @@ static int simulator_init(void)
 		goto fail_cdev_setup;
 	}
 
-	reset_line(0, 0);
+	reset_spi_actuator_values();
 
 	return 0;
 
