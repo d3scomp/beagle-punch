@@ -57,6 +57,11 @@ git pull
 ./grow_partition.sh
 reboot
 
+echo 'deb http://ftp.debian.org/debian/ wheezy-backports main contrib non-free' >> /etc/apt/sources.list
+apt-get -t wheezy-backports install systemd
+apt-get install realpath
+
+
 
 Preparing for kernel compilation [execute on CentOS 7 machine]
 ==============================================================
@@ -109,9 +114,6 @@ Building and installing custom modules and client/server [execute on CentOS 7 ma
 ======================================================================================
 make all
 
-mkdir -p dist/root/punchpress/mods
-cp -f mods/modules.order mods/Module.symvers mods/pruss/pruss.ko mods/sim/spi_slave.ko mods/sim/sim.ko dist/root/punchpress/mods
-
 scp -r dist/* root@beagle1.d3s.hide.ms.mff.cuni.cz:/
 
 
@@ -121,6 +123,6 @@ cd /root/punchpress
 make
 
 
-Launching on BBB [execute on BBB]
+Installing on BBB [execute on BBB]
 =================================
-./start
+./install

@@ -12,8 +12,8 @@ dist: mods
 	mkdir -p dist/root/punchpress/mods
 	cp -f mods/modules.order mods/Module.symvers mods/pruss/pruss.ko mods/sim/spi_slave.ko mods/sim/sim.ko dist/root/punchpress/mods
 
-	mkdir -p dist/root/punchpress/visserver
-	cp -rf visserver dist/root/punchpress/visserver
+	mkdir -p dist/root/punchpress
+	cp -rf visserver dist/root/punchpress
 
 	cp -rf bbb/* dist/root/punchpress
 

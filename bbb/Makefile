@@ -1,8 +1,8 @@
-.PHONY: all clean
+.PHONY: all clean visserver
 
-run: visserver/visserver
+all: visserver
 
-visserver/visserver:
+visserver:
 	make -C visserver all
 
 clean:

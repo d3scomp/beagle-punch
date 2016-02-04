@@ -1,0 +1,19 @@
+#/bin/bash
+
+cat > "/lib/systemd/system/punchpress.service" << EOF
+[Unit]
+Description=Punchpress
+
+[Service]
+Type=simple
+User=root
+ExecStart=/root/punchpress/sim
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable punchpress
+systemctl start punchpress
+

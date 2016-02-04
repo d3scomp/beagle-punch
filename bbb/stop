@@ -1,5 +1,0 @@
-#!/usr/bin/bash
-
-killall visserver
-rmmod sim spi_slave pruss
-rm -f /dev/ppsim0
