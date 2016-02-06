@@ -40,24 +40,22 @@ struct pp_t
 	u32 punched_punches; // number of punched punches
 };
 
-typedef enum {
-	US_NONE = 0,
-	US_ENC_X0 = (1 << 0),
-	US_ENC_X1 = (1 << 1),
-	US_ENC_Y0 = (1 << 2),
-	US_ENC_Y1 = (1 << 3),
-	US_SAFE_L = (1 << 4),
-	US_SAFE_R = (1 << 5),
-	US_SAFE_T = (1 << 6),
-	US_SAFE_B = (1 << 7),
-	US_HEAD_UP = (1 << 8),
-	US_FAIL = (1 << 9)
-} update_state_t;
+#define US_NONE		0
+#define US_ENC_X0	(1 << 0)
+#define US_ENC_X1	(1 << 1)
+#define US_ENC_Y0	(1 << 2)
+#define US_ENC_Y1	(1 << 3)
+#define US_SAFE_L	(1 << 4)
+#define US_SAFE_R	(1 << 5)
+#define US_SAFE_T	(1 << 6)
+#define US_SAFE_B	(1 << 7)
+#define US_HEAD_UP	(1 << 8)
+#define US_FAIL		(1 << 9)
 
 void pp_init(struct pp_t * pp);
 void pp_reinit(struct pp_t * pp);
 void pp_reset(struct pp_t * pp);
-update_state_t pp_update(struct pp_t * pp, u32 us_period);
+u32 pp_update(struct pp_t * pp, u32 us_period);
 
 #endif
 

@@ -60,9 +60,9 @@ static inline void set_encoder(struct pp_axis_t * axis)
 	axis->encoder = enc;
 }
 
-static inline u8 get_state(struct pp_axis_t * axis, int vertical, s32 max_axis_value)
+static inline u32 get_state(struct pp_axis_t * axis, int vertical, s32 max_axis_value)
 {
-	u8 result = axis->encoder;
+	u32 result = axis->encoder << (vertical ? 2 : 0);
 
 	s32 head_pos = axis->head_pos;
 
@@ -76,7 +76,7 @@ static inline u8 get_state(struct pp_axis_t * axis, int vertical, s32 max_axis_v
 	return result;
 }
 
-static inline update_state_t update_axis(
+static inline u32 update_axis(
 	struct pp_axis_t * axis,
 	u32 us_period,
 	int vertical,
@@ -123,15 +123,21 @@ static inline update_state_t update_axis(
 	axis->head_pos += (s32)head_pos_change;
 	head_pos = axis->head_pos;
 
+	set_encoder(axis);
+
 	return get_state(axis, vertical, max_axis_value);
 }
 
-update_state_t pp_update(struct pp_t * pp, u32 us_period) {
-	update_state_t retval;
+u32 pp_update(struct pp_t * pp, u32 us_period) {
+	u32 retval;
 
 	if (!pp->failed) {
 		retval = update_axis(&pp->x_axis, us_period, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
 		retval |= update_axis(&pp->y_axis, us_period, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
+		
+		if (retval & US_FAIL) {
+			pp->failed = 1;
+		}
 	
 		if (pp->punch) {
 			if (pp->remaining_punch_time > 0 || abs32(pp->x_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S || abs32(pp->y_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S) {
@@ -172,6 +178,11 @@ update_state_t pp_update(struct pp_t * pp, u32 us_period) {
 	} else {
 		retval = get_state(&pp->x_axis, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
 		retval |= get_state(&pp->y_axis, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
+
+		if (pp->remaining_punch_time == 0) {
+			retval |= US_HEAD_UP;
+		}
+
 		retval |= US_FAIL;
 	}
 

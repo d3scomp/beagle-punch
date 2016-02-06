@@ -1,0 +1,58 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "ti,beaglebone", "ti,beaglebone-black";
+
+	part-number = "punchpress-io";
+
+	exclusive-use =
+		/* the pin header uses */
+		"P8.11", "P8.12", "P8.13", "P8.14", "P8.15", "P8.16", "P8.17", "P8.18", "P8.19", "P9.13", "P9.14", "P9.15", "P9.16", "P9.18", "P9.21", "P9.22",
+		/* the hardware ip uses */
+		"gpio1_13", "gpio1_9", "gpio0_23", "gpio0_26", "gpio1_15", "gpio1_14", "gpio0_27", "gpio2_1", "gpio0_22", "gpio0_31", "gpio1_18", "gpio1_16", "gpio1_19",
+		"spi0";
+
+
+	fragment@0 {
+		target = <&am33xx_pinmux>;
+		__overlay__ {
+			punchpress: pinmux_punchpress {
+				// See http://www.valvers.com/embedded-linux/beaglebone-black/step04-gpio/
+				pinctrl-single,pins = <
+					0x034 0x7	// SAFE_L_PIN_NUM	P8_11 - GPIO1_13 (834)
+					0x030 0x7	// SAFE_R_PIN_NUM	P8_12 - GPIO1_9  (830)
+					0x024 0x7	// SAFE_T_PIN_NUM	P8_13 - GPIO0_23 (824)
+					0x028 0x7	// SAFE_B_PIN_NUM	P8_14 - GPIO0_26 (828)
+
+					0x03c 0x7	// HEAD_UP_PIN_NUM	P8_15 - GPIO1_15 (83c)
+					0x038 0x26       // SPI CS		P8_16 - GPIO1_14 (838)
+					0x02c 0x27	// RESET_PIN_NUM	P8_17 - GPIO0_27 (82c)
+					0x08c 0x7	// IRQ_PIN_NUM		P8_18 - GPIO2_1  (88c)
+					0x020 0x7	// FAIL_PIN_NUM		P8_19 - GPIO0_22 (820)
+
+					0x014 0x27	// RESERVED0_PIN_NUM	P8_22 - GPIO1_5  (814)
+					0x010 0x27	// RESERVED1_PIN_NUM	P8_23 - GPIO1_4  (810)
+
+					0x074 0x7	// ENC_X0_PIN_NUM	P9_13 - GPIO0_31 (874)
+					0x048 0x7	// ENC_X1_PIN_NUM	P9_14 - GPIO1_18 (848)
+					0x040 0x7	// ENC_Y0_PIN_NUM	P9_15 - GPIO1_16 (840)
+					0x04c 0x7	// ENC_Y1_PIN_NUM	P9_16 - GPIO1_19 (84c)
+				>;
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <&ocp>;
+		__overlay__ {
+			punchpress_helper {
+				compatible = "bone-pinmux-helper";
+				pinctrl-names = "default";
+				pinctrl-0 = <&punchpress>;
+				status = "okay";
+			};
+		};
+	};
+};
+

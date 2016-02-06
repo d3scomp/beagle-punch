@@ -42,6 +42,10 @@ iface eth0 inet static
 
 ifup eth0
 
+
+# Edit /boot/uboot/uEnv.txt and disable HDMI
+# cape_disable=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN
+
 update-rc.d apache2 disable
 update-rc.d lightdm disable
 update-rc.d xrdp disable

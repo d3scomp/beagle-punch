@@ -35,19 +35,21 @@ struct pp_t pp_sim; /* punch press simulator data */
 
 #define PIN_NUM(GPIO, PIN)	(PIN + GPIO * 32)
 
-#define RESET_PIN_NUM		PIN_NUM(1, 12)	// P8_12 - GPIO1_12
-#define IRQ_PIN_NUM		PIN_NUM(0, 26)	// P8_14 - GPIO0_26
-#define HEAD_UP_PIN_NUM		PIN_NUM(2, 22)	// P8_27 - GPIO2_22 
-#define FAIL_PIN_NUM		PIN_NUM(2, 24)	// P8_28 - GPIO2_24 
-#define RESERVED_PIN_NUM	PIN_NUM(2, 23)	// P8_29 - GPIO2_23 
-#define ENC_X0_PIN_NUM		PIN_NUM(2, 12)	// P8_39 - GPIO2_12 
-#define ENC_X1_PIN_NUM		PIN_NUM(2, 13)	// P8_40 - GPIO2_13 
-#define ENC_Y0_PIN_NUM		PIN_NUM(2, 10)	// P8_41 - GPIO2_10 
-#define ENC_Y1_PIN_NUM		PIN_NUM(2, 11)	// P8_42 - GPIO2_11 
-#define SAFE_L_PIN_NUM		PIN_NUM(2, 8)	// P8_43 - GPIO2_8 
-#define SAFE_R_PIN_NUM		PIN_NUM(2, 9)	// P8_44 - GPIO2_9 
-#define SAFE_T_PIN_NUM		PIN_NUM(2, 6)	// P8_45 - GPIO2_6 
-#define SAFE_B_PIN_NUM		PIN_NUM(2, 7)	// P8_46 - GPIO2_7
+#define SAFE_L_PIN_NUM		PIN_NUM(1, 13)	// P8_11 - GPIO1_13 (834)
+#define SAFE_R_PIN_NUM		PIN_NUM(1, 12)	// P8_12 - GPIO1_9  (830)
+#define SAFE_T_PIN_NUM		PIN_NUM(0, 23)	// P8_13 - GPIO0_23 (824)
+#define SAFE_B_PIN_NUM		PIN_NUM(0, 26)	// P8_14 - GPIO0_26 (828)
+
+#define HEAD_UP_PIN_NUM		PIN_NUM(1, 15)	// P8_15 - GPIO1_15 (83c)
+// SPI CS			PIN_NUM(1, 14)	// P8_16 - GPIO1_14 (838)
+#define RESET_PIN_NUM		PIN_NUM(0, 27)	// P8_17 - GPIO0_27 (82c)
+#define IRQ_PIN_NUM		PIN_NUM(2,  1)	// P8_18 - GPIO2_1  (88c)
+#define FAIL_PIN_NUM		PIN_NUM(0, 22)	// P8_19 - GPIO0_22 (820)
+
+#define ENC_X0_PIN_NUM		PIN_NUM(0, 31)	// P9_13 - GPIO0_31 (874)
+#define ENC_X1_PIN_NUM		PIN_NUM(1, 18)	// P9_14 - GPIO1_18 (848)
+#define ENC_Y0_PIN_NUM		PIN_NUM(1, 16)	// P9_15 - GPIO1_16 (840)
+#define ENC_Y1_PIN_NUM		PIN_NUM(1, 19)	// P9_16 - GPIO1_19 (84c)
 
 static struct mcspi_slave_device * spi_slave;
 
@@ -64,9 +66,13 @@ static struct device * pru;
 #define PRU_IRQ_EN_VAR              0x6
 #define PRU_PUNCH_VAR               0x7
 
+// CM_PER (Clock Module Peripheral Registers
+#define CM_PER_START_ADDR 0x44e00000
+#define CM_PER_SIZE       0x400
+#define CM_PER_GPIO2_CLKCTRL 0xb0
 
 
-static void set_spi_sensor_values(struct pp_t * pp, update_state_t update_result)
+static void set_spi_sensor_values(struct pp_t * pp, u32 update_result)
 {
 	u32 sim_state = (update_result & 0xf) | ((update_result << 4) & 0x3f00);
 
@@ -95,15 +101,18 @@ static void reset_spi_actuator_values(void)
 
 
 static int prev_reset_value = 1;
+static int counter = 0;
 
 static irqreturn_t timer_irq_handler(int a, void *b)
 {
 	static int irq_val = 0;
-	static update_state_t last_retval = 0;
-	update_state_t retval;
+	static u32 last_retval = 0;
+	u32 retval;
+	int reset_value = gpio_get_value(RESET_PIN_NUM);
+
 	omap_dm_timer_write_status(timer, OMAP_TIMER_INT_OVERFLOW); // clear interrupt flag
 	
-	if (!gpio_get_value(RESET_PIN_NUM) && prev_reset_value) // detect controller reset and reset the plant in that case
+	if (!reset_value && prev_reset_value) // detect controller reset and reset the plant in that case
 	{
 		pp_reinit(&pp_sim);
 		reset_spi_actuator_values();
@@ -112,15 +121,22 @@ static irqreturn_t timer_irq_handler(int a, void *b)
 		set_spi_sensor_values(&pp_sim, retval);
 
 		last_retval = retval;
-
-		prev_reset_value = 0;
 	}
-	else
+
+	prev_reset_value = reset_value;
+
+	if (reset_value)
 	{
-		prev_reset_value = 1;
 		get_spi_actuator_values(&pp_sim);
 
 		retval = pp_update(&pp_sim, UPDATE_PERIOD_US);
+
+
+
+	if (counter++ % 1000 == 0) {
+		printk(KERN_ALERT "Retval: %x\n", retval); 
+	}
+
 
 		set_spi_sensor_values(&pp_sim, retval);
 
@@ -156,7 +172,7 @@ static irqreturn_t timer_irq_handler(int a, void *b)
 		printk(KERN_ALERT "Time does not have capability: " #cap "\n"); \
 	} while (0)
 
-#define PIN_COUNT	13
+#define PIN_COUNT	12
 struct pin_def_t
 {
 	unsigned int number;
@@ -176,7 +192,6 @@ static struct pin_def_t pins[PIN_COUNT] =
 		.flags = GPIOF_OUT_INIT_LOW,
 		.allocated = false,
 	},
-
 	{
 		.number = HEAD_UP_PIN_NUM,
 		.flags = GPIOF_OUT_INIT_LOW,
@@ -187,11 +202,6 @@ static struct pin_def_t pins[PIN_COUNT] =
 		.flags = GPIOF_OUT_INIT_LOW,
 		.allocated = false,
 	},		
-	{
-		.number = RESERVED_PIN_NUM,
-		.flags = GPIOF_OUT_INIT_LOW,
-		.allocated = false,
-	},	
 	{
 		.number = ENC_X0_PIN_NUM,
 		.flags = GPIOF_OUT_INIT_LOW,
@@ -252,6 +262,8 @@ static int request_pins(void)
 {
 	int i, err;
 	struct pin_def_t * it;
+	void __iomem *cm_per;
+
 	for (i = 0; i < PIN_COUNT; ++i)
 	{
 		it = &pins[i];
@@ -261,8 +273,20 @@ static int request_pins(void)
 			printk(KERN_ALERT "Error allocating pin %d.\n", it->number);
 			goto fail_gpio_request;
 		}
+		printk(KERN_ALERT "Allocated pin %d with flags %X result %d.\n", it->number, it->flags, err);
 		it->allocated = true;
 	}
+
+	/*
+	Enable GPIO2 clock
+	*/
+	cm_per = ioremap(CM_PER_START_ADDR, CM_PER_SIZE);
+	if(!cm_per) {
+		printk (KERN_ERR "HI: ERROR: Failed to remap memory for CM_PER.\n");
+		goto fail_gpio_request;
+	}
+	iowrite32(0x02, cm_per + CM_PER_GPIO2_CLKCTRL);
+	iounmap(cm_per);
 
 	return 0;
 fail_gpio_request:
