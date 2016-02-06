@@ -35,21 +35,22 @@ struct pp_t pp_sim; /* punch press simulator data */
 
 #define PIN_NUM(GPIO, PIN)	(PIN + GPIO * 32)
 
-#define SAFE_L_PIN_NUM		PIN_NUM(1, 13)	// P8_11 - GPIO1_13 (834)
-#define SAFE_R_PIN_NUM		PIN_NUM(1, 12)	// P8_12 - GPIO1_9  (830)
-#define SAFE_T_PIN_NUM		PIN_NUM(0, 23)	// P8_13 - GPIO0_23 (824)
-#define SAFE_B_PIN_NUM		PIN_NUM(0, 26)	// P8_14 - GPIO0_26 (828)
+// #define SPI_CS_PIN_NUM	PIN_NUM(3, 19)	// P9_27 - GPIO3_19 (9a4)
 
-#define HEAD_UP_PIN_NUM		PIN_NUM(1, 15)	// P8_15 - GPIO1_15 (83c)
-// SPI CS			PIN_NUM(1, 14)	// P8_16 - GPIO1_14 (838)
-#define RESET_PIN_NUM		PIN_NUM(0, 27)	// P8_17 - GPIO0_27 (82c)
-#define IRQ_PIN_NUM		PIN_NUM(2,  1)	// P8_18 - GPIO2_1  (88c)
-#define FAIL_PIN_NUM		PIN_NUM(0, 22)	// P8_19 - GPIO0_22 (820)
+#define RESET_PIN_NUM		PIN_NUM(2, 22)	// P8_27 - GPIO0_22 (8e0)
+#define IRQ_PIN_NUM		PIN_NUM(2, 24)	// P8_28 - GPIO2_24 (8e8)
+#define FAIL_PIN_NUM		PIN_NUM(2, 23)	// P8_29 - GPIO2_23 (8e4)
+#define HEAD_UP_PIN_NUM		PIN_NUM(2, 25)	// P8_30 - GPIO2_25 (8ec)
 
-#define ENC_X0_PIN_NUM		PIN_NUM(0, 31)	// P9_13 - GPIO0_31 (874)
-#define ENC_X1_PIN_NUM		PIN_NUM(1, 18)	// P9_14 - GPIO1_18 (848)
-#define ENC_Y0_PIN_NUM		PIN_NUM(1, 16)	// P9_15 - GPIO1_16 (840)
-#define ENC_Y1_PIN_NUM		PIN_NUM(1, 19)	// P9_16 - GPIO1_19 (84c)
+#define SAFE_L_PIN_NUM		PIN_NUM(2, 12)	// P8_39 - GPIO2_12 (8b8)
+#define SAFE_R_PIN_NUM		PIN_NUM(2, 13)	// P8_40 - GPIO2_13 (8bc)
+#define SAFE_T_PIN_NUM		PIN_NUM(2, 10)	// P8_41 - GPIO2_10 (8b0)
+#define SAFE_B_PIN_NUM		PIN_NUM(2, 11)	// P8_42 - GPIO2_11 (8b4)
+
+#define ENC_X0_PIN_NUM		PIN_NUM(2,  8)	// P8_43 - GPIO2_8  (8a8)
+#define ENC_X1_PIN_NUM		PIN_NUM(2,  9)	// P8_44 - GPIO2_9  (8ac)
+#define ENC_Y0_PIN_NUM		PIN_NUM(2,  6)	// P8_45 - GPIO2_6  (8a0)
+#define ENC_Y1_PIN_NUM		PIN_NUM(2,  7)	// P8_46 - GPIO2_7  (8a4)
 
 static struct mcspi_slave_device * spi_slave;
 

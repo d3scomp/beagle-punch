@@ -12,7 +12,7 @@
 
 #define LAST_VALID_CMD	6
 
-#define SLAVE_SELECT_REG	r31.t14 // slave select GPI
+#define SLAVE_SELECT_REG	r31.t5 // slave select GPI
 
 // ****************************************************************************
 // variables

@@ -15,7 +15,9 @@ dist: mods
 	mkdir -p dist/root/punchpress
 	cp -rf visserver dist/root/punchpress
 
-	cp -rf bbb/* dist/root/punchpress
+	cp -f mods/sim/punchpress-io-00A0.dtbo dist/lib/firmware
+
+	cp -rf bbb/* dist
 
 clean:
 	make -C mods clean
