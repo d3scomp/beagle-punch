@@ -37,10 +37,10 @@ struct pp_t pp_sim; /* punch press simulator data */
 
 // #define SPI_CS_PIN_NUM	PIN_NUM(3, 19)	// P9_27 - GPIO3_19 (9a4)
 
-#define RESET_PIN_NUM		PIN_NUM(2, 22)	// P8_27 - GPIO0_22 (8e0)
-#define IRQ_PIN_NUM		PIN_NUM(2, 24)	// P8_28 - GPIO2_24 (8e8)
-#define FAIL_PIN_NUM		PIN_NUM(2, 23)	// P8_29 - GPIO2_23 (8e4)
-#define HEAD_UP_PIN_NUM		PIN_NUM(2, 25)	// P8_30 - GPIO2_25 (8ec)
+#define RESET_PIN_NUM		PIN_NUM(0, 10)	// P8_31 - GPIO0_10 (8d8)
+#define IRQ_PIN_NUM		PIN_NUM(0, 11)	// P8_32 - GPIO0_11 (8dc)
+#define FAIL_PIN_NUM		PIN_NUM(0, 9)	// P8_33 - GPIO0_9  (8d4)
+#define HEAD_UP_PIN_NUM		PIN_NUM(2, 17)	// P8_34 - GPIO2_17 (8cc)
 
 #define SAFE_L_PIN_NUM		PIN_NUM(2, 12)	// P8_39 - GPIO2_12 (8b8)
 #define SAFE_R_PIN_NUM		PIN_NUM(2, 13)	// P8_40 - GPIO2_13 (8bc)
