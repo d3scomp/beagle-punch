@@ -77,112 +77,46 @@ static const struct of_device_id omap_mcspi_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, omap_mcspi_of_match);
 
-/******************************** REGISTER ACCESS METHODS **************************************/
 
-// REVISION register - not necessary
-
-// SYSCONFIG register
 #define SYSCONFIG_OFFSET	0x110
-#define SYSCONFIG_SOFTRESET_MASK	0x2 // set this bit to 1 to reset MCSPI module by sw, it is then automatically set to 0
 
-// SYSSTATUS register
 #define SYSSTATUS_OFFSET	0x114
 #define SYSSTATUS_RESETDONE_MASK	0x1 // says whether reset of the module is in progress
 
-// IRQSTATUS register
-#define IRQSTATUS_OFFSET	0x118
-
-// IRQENABLE register
-#define IRQENABLE_OFFSET	0x11C
-
-// SYST register
 #define	SYST_OFFSET	0x124
-#define SYST_SSB_MASK	0x800 // Set Status Bit - this bit must be cleared prior attempting to clear any status bit in IRQSTATUS
-// writing 1 sets to 1 all status bits contained in the IRQSTATUS register
 
 #define SYST_SPIENDIR_MASK	0x400 // sets the direction of the SPIEN[3:0] lines and the SPICLK line - 0 = output/master mode, 1 = input/slave mode
-#define SYST_SPIDATDIR1_MASK	0x200 // sets the direction of the SPIDAT[1], 0 = output, 1 = input
 #define SYST_SPIDATDIR0_MASK	0x100 // sets the direction of the SPIDAT[0], 0 = output, 1 = input
 #define SYST_SPICLK_MASK	0x40 // if SYST[SPIENDIR] == 1, read from this bit reads the CLKSPI value (high/low), if SYST[SPIENDIR] == 0, write to this bit drives the CLKSPI value
 #define SYST_SPIDAT_1_MASK	0x20 // similar to SYST[SPICLK] only this time for SPIDAT_1 and driven by SYST[SPIDIR1]
 #define SYST_SPIDAT_0_MASK	0x10 // similar to SYST[SPICLK] only this time for SPIDAT_0 and driven by SYST[SPIDIR0]
-#define SYST_SPIEN_3_MASK	0x08 // same as SYST[SPICLK] only this time for SPIEN3
-#define SYST_SPIEN_2_MASK	0x04 // same as SYST[SPICLK] only this time for SPIEN2
-#define SYST_SPIEN_1_MASK	0x02 // same as SYST[SPICLK] only this time for SPIEN1
-#define SYST_SPIEN_0_MASK	0x01 // same as SYST[SPICLK] only this time for SPIEN0
 
-// MODULCTRL register
 #define MODULCTRL_OFFSET	0x128
-#define MODULCTRL_FDAA_MASK	0x100
-#define MODULCTRL_MOA_MASK	0x80
 #define	MODULCTRL_INITDLY_MASK	0x70
-#define MODULCTRL_SYSTEM_TEST_MASK	0x8 // enables the system test mode, 0 = functional mode, 1 = system test mode
 #define MODULCTRL_MS_MASK	0x4 // master/slave
-// 0 = master, the module generates the SPICLK and SPIEN[3:0]
-// 1 = slave, the module receives the SPICLK and SPIEN[3:0]
 #define MODULCTRL_PIN34_MASK	0x2 // pin mode selection, if asserted the contoller only uses SIMO, SOMI and SPICLK clock pin for SPI transfers
-// 0 = SPIEN used as a chip select
-// 1 = SPIEN is not used, in this mode all options related to chipselect have no meaning
-#define MODULCTRL_SINGLE_MASK	0x1 // single/multi channel, master mode only
 
-// CH0CONF register
 #define CH0CONF_OFFSET	0x12C
 
-#define CHCONF_CLKG_MASK	0x20000000 // clock divider granularity
-#define CHCONF_FFER_MASK	0x10000000 // FIFO enabled for receive (only one channel can have it set), 1 = enabled
-#define CHCONF_FFEW_MASK	0x08000000 // FIFO enabled for transmit
-#define CHCONF_TCS_MASK		0x06000000 // chip select time control
 #define CHCONF_SBPOL_MASK	0x01000000 // start bit polarity, 0 = start bit polarity is held to zero during SPI transfer, 1 = one
 #define CHCONF_SBE_MASK		0x00800000 // start bit enable for SPI transfer, 0 = SPI transfer length as specified by WL bit field, 1 = start bit D/CX added, polarity defined by SBPOL
-#define CHCONF_SPIENSLV_MASK	0x00600000 // (channel 0 and slave mode only) SPI slave select signal detection - which SPIEN is used to detect slave select
 #define CHCONF_SPIENSLV_0	0x00000000 // detection enabled on SPIEN[0]
-#define CHCONF_SPIENSLV_1	0x00200000 // detection enabled on SPIEN[1]
-#define CHCONF_SPIENSLV_2	0x00400000 // detection enabled on SPIEN[2]
-#define CHCONF_SPIENSLV_3	0x00600000 // detection enabled on SPIEN[3]
 
-#define CHCONF_FORCE_MASK	0x00100000 // (single channel master mode only) manual SPIEN assertion to keep SPIEN active between words
-#define CHCONF_TURBO_MASK	0x00080000 // 0 = turbo deactivated (recommended for single word transfer), 1 = turbo on
 #define CHCONF_IS_MASK		0x00040000 // input select, 0 = data line 0 (SPIDAT[0]) selected for reception, 1 = data line 1 (SPIDAT[1]) selected
 #define CHCONF_DPE1_MASK	0x00020000 // transmission enabled for data line 1(SPIDATAGZEN[1])
-// 0 = data line 1 (SPIDAT[1]) selected for transmission
-// 1 = no transmision on data line 1
 #define CHCONF_DPE0_MASK	0x00010000 // same as DPE0 but for data line 0 (SPIDAT[0])
-#define CHCONF_DMAR_MASK	0x00008000 // DMA read request, 0 = disabled, 1 = enabled
-#define CHCONF_DMAW_MASK	0x00004000 // DMA write request, 0 = disabled, 1 = enabled
-#define CHCONF_TRM_MASK		0x00003000 // transmit/receive modes
 #define CHCONF_TRM_TRANSMIT_AND_RECEIVE	0x00000000 // 0 = transmit and receive mode
-#define CHCONF_TRM_RECEIVE_ONLY		0x00001000 // 1 = receive-only mode
-#define CHCONF_TRM_TRANSMIT_ONLY	0x00002000 // 2 = transmit-only mode
-// 3 = reserved
 
-#define CHCONF_WL_MASK		0x00000F80 // SPI word length, 0, 1, 2 values are reserved, otherwise the word has length of WL + 1; 3 => 4 bit word, 1F = 32 bit word
 #define CHCONF_WL(length) (((length - 1) & 0x1F) << 7) // converts a length of an SPI word to a value which can be ORed into the CONF register (if it has zero there)
 
 #define CHCONF_EPOL_MASK	0x00000040 // SPIEN polarity, 0 = SPIEN is held high during the active state, 1 = low
-#define CHCONF_CLKD_MASK	0x0000003C // frequency divider for SPICLK, only for master mode
 #define CHCONF_POL_MASK		0x00000002 // SPICLK polarity, 0 = SPICLK is held high during active state, 1 = low
 #define CHCONF_PHA_MASK		0x00000001 // SPICLK phase, 0 = data are latched on odd numbered edges of SPICLK, 1 = even numbered edges
-
-// CH0STAT register
-#define CH0STAT_OFFSET	0x130
-
-#define CHSTAT_RXFFF_MASK 	0x40
-#define CHSTAT_RXFFE_MASK 	0x20
-#define CHSTAT_TXFFF_MASK 	0x10
-#define CHSTAT_TXFFE_MASK 	0x08
-#define CHSTAT_EOT_MASK 	0x04
-#define CHSTAT_TXS_MASK 	0x02 // channel x transmitter register status, 0 = register full, 1 = empty, cleared when most significant byte of MCSPI_TXx is written, set after channel enable and when an SPI work is transferred from MCSPI_TXx register to the shift register
-#define CHSTAT_RXS_MASK 	0x01 // channel x receiver register status, 0 = empty, 1 = full, cleared when enabling channel x and also when the msB of the MCSPI_RXx is read, set when the received SPI word is transferred from the shift register to the MCSPI_RXx
 
 // CH0CTRL register
 #define CH0CTRL_OFFSET	0x134
 
-#define CHCTRL_EXTCLK_MASK	0xFF00 // clock ration extension
 #define CHCTRL_EN_MASK		0x0001 // channel enable, 0 = not active, 1 = active
-
-// tx and rx registers
-#define TX0_OFFSET	0x138
-#define RX0_OFFSET	0x13C
 
 static u32 read_register(struct mcspi_slave_device * slave, unsigned int register_offset)
 {
@@ -195,12 +129,6 @@ static void write_register(struct mcspi_slave_device * slave, unsigned int regis
 }
 
 /***********************************************************************************************/
-
-static u32 next_value = 0; 
-
-#define CLKCTRL_OFFSET 0x4c
-#define CM_PER_OFFSET	0x44e00000
-#define CLKCTRL_IDLEST_MASK	0x30000
 
 int mcspi_slave_enable(struct mcspi_slave_device * slave, u8 word_length)
 {
@@ -389,15 +317,6 @@ static int spi_slave_probe(struct platform_device *pdev)
 		goto fail_ioremap;
 	}
 
-	r = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-	if (!r) {
-		err = -ENODEV;
-		printk(KERN_ALERT "IORESOURCE_IRQ failed\n");
-		goto fail_get_platform_irq;
-	}
-
-	spi_slave->irq_num = r->start;
-
 	pinctrl = devm_pinctrl_get_select_default(&pdev->dev);
 	if (IS_ERR(pinctrl))
 		printk(KERN_ALERT "pins are not configured from the driver\n");
@@ -413,8 +332,8 @@ static int spi_slave_probe(struct platform_device *pdev)
 	// power up the spi module
 	pm_runtime_enable(dev);
 
-	printk(KERN_ALERT "SPI Slave probe. num_chipselect %i, pin_dir: %i, irq_num: %i, regs_offset: %i, regs_phys_base: 0x%lx, regs_base: %p\n",
-		spi_slave->num_chipselect, spi_slave->pin_dir, spi_slave->irq_num, regs_offset, spi_slave->regs_phys_base, spi_slave->regs_base);
+	printk(KERN_ALERT "SPI Slave probe. num_chipselect %i, pin_dir: %i, regs_offset: %i, regs_phys_base: 0x%lx, regs_base: %p\n",
+		spi_slave->num_chipselect, spi_slave->pin_dir, regs_offset, spi_slave->regs_phys_base, spi_slave->regs_base);
 
 	// add spi device to the list
 	down(&mcspi_slave_list_lock);
@@ -425,7 +344,6 @@ static int spi_slave_probe(struct platform_device *pdev)
 	return 0;
 
 fail_clk_get:
-fail_get_platform_irq:
 	devm_iounmap(dev, spi_slave->regs_base);
 fail_ioremap:
 fail_get_platform_mem:

@@ -1,0 +1,65 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "ti,beaglebone", "ti,beaglebone-black";
+
+	part-number = "punchpress-io";
+
+	exclusive-use =
+		/* the pin header uses */
+		"P9.27", "P8.27", "P8.28", "P8.29", "P8.30", "P8.31", "P8.32", "P8.33", "P8.34", "P8.35", "P8.36", "P8.37", "P8.38", "P8.39", "P8.40", "P8.41", "P8.42", "P9.43", "P9.44", "P9.45", "P9.46",
+		/* the hardware ip uses */
+		"gpio3_19", "gpio2_22", "gpio2_24", "gpio2_23", "gpio2_25", "gpio0_10", "gpio0_11", "gpio0_9", "gpio2_17", "gpio0_8", "gpio2_16", "gpio2_14", "gpio2_15", "gpio2_12", "gpio2_13", "gpio2_10", "gpio2_11", "gpio2_8", "gpio2_9", "gpio2_6", "gpio2_7";
+
+
+	fragment@0 {
+		target = <&am33xx_pinmux>;
+		__overlay__ {
+			punchpress: pinmux_punchpress {
+				// See http://www.valvers.com/embedded-linux/beaglebone-black/step04-gpio/
+				pinctrl-single,pins = <
+					0x1a4 0x26	// SPI_CS_PIN_NUM, P9_27 - GPIO3_19	(9a4)
+
+					0x0e0 0x27	// RESET_PIN_NUM, P8_27 - GPIO2_22	(8e0)
+					0x0e8 0x27	// IRQ_PIN_NUM, P8_28 - GPIO2_24	(8e8)
+					0x0e4 0x27	// FAIL_PIN_NUM, P8_29 - GPIO2_23	(8e4)
+					0x0ec 0x27	// HEAD_UP_PIN_NUM, P8_30 - GPIO2_25	(8ec)
+
+					0x0d8 0x27	// RESET_PIN_NUM, P8_31 - GPIO0_10	(8d8)
+					0x0dc 0x27	// IRQ_PIN_NUM, P8_32 - GPIO0_11	(8dc)
+					0x0d4 0x27	// FAIL_PIN_NUM, P8_33 - GPIO0_9	(8d4)
+					0x0cc 0x27	// HEAD_UP_PIN_NUM, P8_34 - GPIO2_17	(8cc)
+
+					0x0d0 0x27	// RESET_PIN_NUM, P8_35 - GPIO0_8	(8d0)
+					0x0c8 0x27	// IRQ_PIN_NUM, P8_36 - GPIO2_16	(8c8)
+					0x0c0 0x27	// FAIL_PIN_NUM, P8_37 - GPIO2_14 	(8c0)
+					0x0c4 0x27	// HEAD_UP_PIN_NUM, P8_38 - GPIO2_15	(8c4)
+
+					0x0b8 0x27	// SAFE_L_PIN_NUM, P8_39 - GPIO2_12	(8b8)
+					0x0bc 0x27	// SAFE_R_PIN_NUM, P8_40 - GPIO2_13	(8bc)
+					0x0b0 0x27	// SAFE_T_PIN_NUM, P8_41 - GPIO2_10	(8b0)
+					0x0b4 0x27	// SAFE_B_PIN_NUM, P8_42 - GPIO2_11	(8b4)
+
+					0x0a8 0x27	// ENC_X0_PIN_NUM, P8_43 - GPIO2_8	(8a8)
+					0x0ac 0x27	// ENC_X1_PIN_NUM, P8_44 - GPIO2_9	(8ac)
+					0x0a0 0x27	// ENC_Y0_PIN_NUM, P8_45 - GPIO2_6	(8a0)
+					0x0a4 0x27	// ENC_Y1_PIN_NUM, P8_46 - GPIO2_7	(8a4)
+				>;
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <&ocp>;
+		__overlay__ {
+			punchpress_helper {
+				compatible = "bone-pinmux-helper";
+				pinctrl-names = "default";
+				pinctrl-0 = <&punchpress>;
+				status = "okay";
+			};
+		};
+	};
+};
+

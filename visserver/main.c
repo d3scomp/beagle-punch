@@ -14,7 +14,7 @@
 
 
 #define KMODULE_NODE	"/dev/ppsim0"
-#define UART_FILENAME	"/dev/ttyGSO"
+#define UART_FILENAME	"/dev/ttyGS0"
 #define BUF_SIZE	1024
 
 static ssize_t read_status(int fd, char * buf, size_t size)

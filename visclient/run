@@ -1,7 +1,9 @@
 #!/bin/sh
 
-CLASSPATH='-cp ./jssc.jar:./javax.json-1.0.4.jar:.'
+# Oracle Java 8 is required because of the JavaFX dependency
 JAVA=/usr/java/latest/bin/java
+
+CLASSPATH='-cp ./jssc.jar:./javax.json-1.0.4.jar:.'
 
 $JAVA $CLASSPATH bpv.view.Visualizer "$@"
 

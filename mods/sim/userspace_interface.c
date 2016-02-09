@@ -18,8 +18,6 @@
 #include <linux/kernel.h>
 #include <asm/uaccess.h>
 
-#include "consumer.h"
-
 #include "simulation.h"
 #include "json.h"
 #include "userspace_interface.h"

@@ -1,6 +1,6 @@
 TARGET:=punch-eval
+TOOLCHAIN_BIN:=/opt/gcc-arm/bin/
 TOOLCHAIN_PREFIX:=arm-none-eabi-
-TOOLCHAIN_ROOT:=/root/gcc-arm
 
 # Optimization level, can be [0, 1, 2, 3, s].
 OPTLVL:=0
@@ -85,12 +85,12 @@ CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -std=c++11 -fno-use-cxa-atexit
 LDFLAGS=$(COMMONFLAGS) -T$(LINKER_SCRIPT) -Wl,-Map,$(BIN_DIR)/$(TARGET).map $(CPPFLAGS)
 
 
-CC=$(TOOLCHAIN_PREFIX)gcc
-CPP=$(TOOLCHAIN_PREFIX)g++
-LD=$(TOOLCHAIN_PREFIX)g++
-OBJCOPY=$(TOOLCHAIN_PREFIX)objcopy
-OSIZE=$(TOOLCHAIN_PREFIX)size
-AS=$(TOOLCHAIN_PREFIX)as
+CC=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)gcc
+CPP=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)g++
+LD=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)g++
+OBJCOPY=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)objcopy
+OSIZE=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)size
+AS=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)as
 
 OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRC))
 OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(OBJ))

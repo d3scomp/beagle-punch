@@ -42,6 +42,7 @@ iface eth0 inet static
 
 ifup eth0
 
+
 update-rc.d apache2 disable
 update-rc.d lightdm disable
 update-rc.d xrdp disable
@@ -57,6 +58,11 @@ git pull
 ./grow_partition.sh
 reboot
 
+echo 'deb http://ftp.debian.org/debian/ wheezy-backports main contrib non-free' >> /etc/apt/sources.list
+apt-get -t wheezy-backports install systemd
+apt-get install realpath
+
+
 
 Preparing for kernel compilation [execute on CentOS 7 machine]
 ==============================================================
@@ -71,7 +77,6 @@ rpm -Uhv /root/rpmbuild/RPMS/x86_64/uboot-tools-2011.03-1.el7.centos.x86_64.rpm
 
 Preparing and building kernel (http://elinux.org/Building_BBB_Kernel) [execute on CentOS 7 machine]
 ===================================================================================================
-cd plant
 git clone git://github.com/beagleboard/kernel.git
 cd kernel
 git checkout 3.8
@@ -94,8 +99,6 @@ make ARCH=arm CROSS_COMPILE=arm-linux-gnu- INSTALL_MOD_PATH=../../dist modules_i
 
 cd ../..
 
-make all
-
 
 Intalling the kernel on the BBB [execute on CentOS 7 machine]
 =============================================================
@@ -105,10 +108,12 @@ cp kernel/kernel/arch/arm/boot/zImage dist/boot/uboot
 mkdir -p dist/boot/uboot/dtbs
 cp kernel/kernel/arch/arm/boot/dts/am335x-boneblack.dtb dist/boot/uboot/dtbs
 
-rm -f dist/lib/modules/3.8.13-00770-gfb3e41d-dirty/build dist/lib/modules/3.8.13-00770-gfb3e41d-dirty/source
+rm -f dist/lib/modules/3.8.13-00770-*-dirty/build dist/lib/modules/3.8.13-00770-*-dirty/source
 
-mkdir -p dist/root/punchpress
-cp -r modules Makefile visualizer_interface dist/root/punchpress
+
+Building and installing custom modules and client/server [execute on CentOS 7 machine]
+======================================================================================
+make all
 
 scp -r dist/* root@beagle1.d3s.hide.ms.mff.cuni.cz:/
 
@@ -116,10 +121,9 @@ scp -r dist/* root@beagle1.d3s.hide.ms.mff.cuni.cz:/
 Compiling on BBB [execute on BBB]
 =================================
 cd /root/punchpress
-make bbb
+make
 
 
-Launching on BBB [execute on BBB]
+Installing on BBB [execute on BBB]
 =================================
-make run-bbb
-
+./install
