@@ -36,8 +36,8 @@
 					0x0c0 0x27	// FAIL_PIN_NUM, P8_37 - GPIO2_14 	(8c0)
 					0x0c4 0x27	// HEAD_UP_PIN_NUM, P8_38 - GPIO2_15	(8c4)
 
-					0x0b8 0x27	// SAFE_L_PIN_NUM, P8_39 - GPIO2_12	(8b8)
-					0x0bc 0x27	// SAFE_R_PIN_NUM, P8_40 - GPIO2_13	(8bc)
+					0x0b8 0x27	// SAFE_R_PIN_NUM, P8_39 - GPIO2_12	(8b8)
+					0x0bc 0x27	// SAFE_L_PIN_NUM, P8_40 - GPIO2_13	(8bc)
 					0x0b0 0x27	// SAFE_T_PIN_NUM, P8_41 - GPIO2_10	(8b0)
 					0x0b4 0x27	// SAFE_B_PIN_NUM, P8_42 - GPIO2_11	(8b4)
 
