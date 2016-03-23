@@ -1,5 +1,5 @@
 TARGET:=punch-eval
-TOOLCHAIN_BIN:=/opt/gcc-arm/bin/
+TOOLCHAIN_BIN:=/opt/gcc-arm-none-eabi/bin/
 TOOLCHAIN_PREFIX:=arm-none-eabi-
 
 # Optimization level, can be [0, 1, 2, 3, s].
