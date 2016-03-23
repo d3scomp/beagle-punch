@@ -1,6 +1,8 @@
 TARGET:=punch-eval
-TOOLCHAIN_BIN:=/opt/gcc-arm/bin/
+TOOLCHAIN_BIN:=~bures/gcc-arm-none-eabi-5_2-2015q4/bin/
 TOOLCHAIN_PREFIX:=arm-none-eabi-
+
+OPENOCD:=~bures/openocd/bin/openocd
 
 # Optimization level, can be [0, 1, 2, 3, s].
 OPTLVL:=0
@@ -143,10 +145,10 @@ clean:
 
 openocd:
 	#openocd -f interface/stlink-v2.cfg -f target/stm32f4x_stlink.cfg
-	openocd -f board/stm32f4discovery.cfg
+	$(OPENOCD) -f board/stm32f4discovery.cfg
 
 flash: all
-	openocd -f board/stm32f4discovery.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset"
+	$(OPENOCD) -f board/stm32f4discovery.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset; exit"
 
 
 
