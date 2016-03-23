@@ -1,8 +1,5 @@
 TARGET:=punch-eval
-TOOLCHAIN_BIN:=~bures/gcc-arm-none-eabi-5_2-2015q4/bin/
 TOOLCHAIN_PREFIX:=arm-none-eabi-
-
-OPENOCD:=~bures/openocd/bin/openocd
 
 # Optimization level, can be [0, 1, 2, 3, s].
 OPTLVL:=0
@@ -87,12 +84,12 @@ CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -std=c++11 -fno-use-cxa-atexit
 LDFLAGS=$(COMMONFLAGS) -T$(LINKER_SCRIPT) -Wl,-Map,$(BIN_DIR)/$(TARGET).map $(CPPFLAGS)
 
 
-CC=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)gcc
-CPP=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)g++
-LD=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)g++
-OBJCOPY=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)objcopy
-OSIZE=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)size
-AS=$(TOOLCHAIN_BIN)$(TOOLCHAIN_PREFIX)as
+CC=$(TOOLCHAIN_PREFIX)gcc
+CPP=$(TOOLCHAIN_PREFIX)g++
+LD=$(TOOLCHAIN_PREFIX)g++
+OBJCOPY=$(TOOLCHAIN_PREFIX)objcopy
+OSIZE=$(TOOLCHAIN_PREFIX)size
+AS=$(TOOLCHAIN_PREFIX)as
 
 OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRC))
 OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(OBJ))
@@ -143,12 +140,8 @@ clean:
 	@rm -f $(BIN_DIR)/$(TARGET).hex
 	@rm -f $(BIN_DIR)/$(TARGET).bin
 
-openocd:
-	#openocd -f interface/stlink-v2.cfg -f target/stm32f4x_stlink.cfg
-	$(OPENOCD) -f board/stm32f4discovery.cfg
-
 flash: all
-	$(OPENOCD) -f board/stm32f4discovery.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset; exit"
+	openocd -f board/stm32f4discovery.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset; exit"
 
 
 
